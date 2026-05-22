@@ -14,13 +14,13 @@
 
 | # | Atividade | Horas | Status | Notas |
 |---|-----------|------:|--------|-------|
-| 1 | Fix bug `progId is not defined` ao duplicar aba de Matérias | 1h | pendente | `switchMatTab()` referencia `progId` como variável livre em onclick |
+| 1 | ~~Fix bug `progId is not defined` ao duplicar aba de Matérias~~ | ~~1h~~ | **feito** | `sincronizarPaineisModo()` referenciava `progId` como variável livre — substituído por `programaAtivoId` |
 | 2 | Unificar os dois rows de botões de programa no painel Matérias | 1h | pendente | Remover duplicidade de renderização |
 | 3 | Testes automatizados básicos (`tests.js` no console) | 8h | pendente | Smoke tests para funções críticas; 4.300+ linhas sem teste é risco alto |
 | 4 | ~~Otimizar `max_tokens` por tipo de chamada à API~~ | ~~2h~~ | **feito** | `callClaude()` agora aceita `maxTokens` por feature |
 | 5 | ~~Atualizar README.md~~ | ~~1h~~ | **feito** | README reflete v1.4: SM-2, gamificação, freemium, múltiplos programas |
 
-**Subtotal Fase 1: 10h restantes ≈ 0,7 dias**
+**Subtotal Fase 1: 9h restantes ≈ 0,6 dias**
 
 ---
 
@@ -71,13 +71,13 @@
 
 | Fase | Horas restantes | Dias (15h/dia) |
 |------|----------------:|---------------:|
-| Fase 1 — Fundação | 10h | 0,7 dias |
+| Fase 1 — Fundação | 9h | 0,6 dias |
 | Fase 2 — Features diferenciadoras | 21h | 1,4 dias |
 | Fase 3 — Retenção e produto completo | 34h | 2,3 dias |
 | Fase 4 — Monetização | 28h | 1,9 dias |
-| **TOTAL RESTANTE** | **93h** | **~6,2 dias** |
+| **TOTAL RESTANTE** | **92h** | **~6,1 dias** |
 
-*(3h já entregues: token optimization + README atualizado)*
+*(4h já entregues: token optimization + README + fix progId)*
 
 ---
 
