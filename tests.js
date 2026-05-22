@@ -17,6 +17,7 @@
  *  - Tema: setTheme
  *  - Navegação: goTo, setModo, switchMatTab (inclui verificação dos BUG FIX 1 e 2)
  *  - Renderizações: não lançam exceção (renderDashboard, renderCrudLista, etc.)
+ *  - Compartilhamento de programas: _montarExportPrograma, _executarImportPrograma, round-trip export→import
  */
 (() => {
   'use strict';
@@ -573,7 +574,76 @@
   noThrow('renderDiagnostico() vazio', () => renderDiagnostico('diag-cacd', '__vazio__'));
   endSection();
 
-  // ─── 19. Restaurar estado global ─────────────────────────────────────────────
+  // ─── 20. Compartilhamento de programas (Tarefa 7) ────────────────────────────
+
+  section('Compartilhamento de programas — export/import');
+
+  if (programas.length > 0) {
+    const progTeste = programas[0];
+    const qtdMatsAntes = materias.length;
+    const qtdProgsAntes = programas.length;
+
+    // -- Export --
+    noThrow('_montarExportPrograma() não lança exceção', () => _montarExportPrograma(progTeste.id));
+
+    const exportData = _montarExportPrograma(progTeste.id);
+    ok('exportData tem versao "1.0"',            exportData && exportData.versao === '1.0');
+    ok('exportData tem tipo "programa"',         exportData && exportData.tipo === 'programa');
+    ok('exportData.programa tem nome',           exportData && typeof exportData.programa.nome === 'string' && exportData.programa.nome.length > 0);
+    ok('exportData.programa tem tipo',           exportData && typeof exportData.programa.tipo === 'string');
+    ok('exportData.materias é array',            exportData && Array.isArray(exportData.materias));
+    ok('exportData.exportadoEm é string ISO',    exportData && typeof exportData.exportadoEm === 'string' && exportData.exportadoEm.includes('T'));
+
+    if (exportData && exportData.materias.length > 0) {
+      const m0 = exportData.materias[0];
+      ok('matéria exportada tem nome',           typeof m0.nome === 'string' && m0.nome.length > 0);
+      ok('matéria exportada tem topicos.n1',     Array.isArray(m0.topicos && m0.topicos.n1));
+      ok('matéria exportada tem topicos.n2',     Array.isArray(m0.topicos && m0.topicos.n2));
+      ok('matéria exportada tem topicos.n3',     Array.isArray(m0.topicos && m0.topicos.n3));
+      ok('matéria exportada NÃO tem id (isolado)', m0.id === undefined);
+      ok('matéria exportada NÃO tem programaId (isolado)', m0.programaId === undefined);
+    }
+
+    // -- Round-trip: export → encode → decode → import --
+    noThrow('round-trip export/import não lança exceção', () => {
+      const code = btoa(unescape(encodeURIComponent(JSON.stringify(exportData))));
+      const decoded = JSON.parse(decodeURIComponent(escape(atob(code))));
+      _executarImportPrograma(decoded);
+    });
+
+    ok('import criou novo programa',  programas.length === qtdProgsAntes + 1);
+    ok('import criou novas matérias', materias.length  >= qtdMatsAntes);
+
+    const importado = programas[programas.length - 1];
+    ok('programa importado tem nome com "(importado)"', importado.nome.includes('importado'));
+    ok('programa importado tem tipo válido',            typeof importado.tipo === 'string');
+    ok('programa importado tem id próprio',             importado.id !== progTeste.id);
+
+    const matsImportadas = materias.filter(m => m.programaId === importado.id);
+    ok('matérias importadas têm programaId correto',  matsImportadas.every(m => m.programaId === importado.id));
+    ok('matérias importadas têm id próprio (não conflita)', matsImportadas.every(m => m.id !== undefined && m.id.startsWith('m')));
+    ok('matérias importadas têm topicos.n1 array',    matsImportadas.every(m => Array.isArray(m.topicos && m.topicos.n1)));
+
+    // -- Import com formato inválido deve falhar silenciosamente --
+    noThrow('_executarImportPrograma(dados inválidos) não lança', () => {
+      _executarImportPrograma({ versao: '1.0', tipo: 'baralho' }); // tipo errado
+      _executarImportPrograma(null);
+      _executarImportPrograma({});
+    });
+    ok('dados inválidos não alteram contagem de programas', programas.length === qtdProgsAntes + 1);
+
+    // -- Limpar programa e matérias importadas pelo teste --
+    programas.splice(programas.indexOf(importado), 1);
+    materias.splice(0, materias.length, ...materias.filter(m => m.programaId !== importado.id));
+    salvarProgramas(); salvarMaterias();
+
+  } else {
+    console.warn('Sem programas — seção 20 ignorada');
+  }
+
+  endSection();
+
+  // ─── 21. Restaurar estado global ─────────────────────────────────────────────
 
   restore(estado);
   try { goTo('dashboard', null); } catch (_) {}

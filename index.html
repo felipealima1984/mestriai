@@ -677,7 +677,10 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
     <div class="panel" id="panel-programas">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <div style="font-size:13px;color:var(--muted)">Cada programa tem suas próprias matérias e regras de estudo.</div>
-        <button class="btn btn-primary-cacd btn-sm" onclick="abrirModalPrograma()">+ Novo programa</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="abrirModalImportarPrograma()">Importar</button>
+          <button class="btn btn-primary-cacd btn-sm" onclick="abrirModalPrograma()">+ Novo programa</button>
+        </div>
       </div>
       <div id="prog-list-container"></div>
     </div>
@@ -1432,6 +1435,39 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
   </div>
 </div>
 
+<!-- MODAL COMPARTILHAR PROGRAMA -->
+<div class="modal-overlay" id="modal-prog-share">
+  <div class="modal">
+    <div class="modal-title">Compartilhar programa</div>
+    <div class="modal-sub" id="modal-prog-share-sub">Exporte para compartilhar com outras pessoas ou para fazer backup.</div>
+    <div id="modal-prog-share-export" style="display:none">
+      <div style="margin-bottom:12px">
+        <div class="form-label" style="display:block;margin-bottom:8px">Código do programa</div>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" id="prog-share-code" readonly style="font-size:12px;font-family:monospace" />
+          <button class="btn btn-secondary btn-sm" onclick="copiarCodigoPrograma()">Copiar</button>
+        </div>
+      </div>
+      <button class="btn btn-primary-cacd btn-sm" onclick="downloadPrograma()" style="width:100%">Baixar arquivo .json</button>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+      <div class="form-label" style="display:block;margin-bottom:8px">Importar programa</div>
+      <div style="margin-bottom:8px">
+        <input type="file" id="prog-import-file" accept=".json" style="display:none" onchange="lerArquivoPrograma(event)" />
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('prog-import-file').click()" style="width:100%;margin-bottom:8px">Escolher arquivo .json</button>
+      </div>
+      <div class="form-label" style="display:block;margin-bottom:6px">Ou cole o código abaixo</div>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="prog-import-code" placeholder="Cole o código do programa aqui..." style="font-size:13px"/>
+        <button class="btn btn-primary-cacd btn-sm" onclick="confirmarImportarPrograma()">Importar</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="fecharModalProgShare()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL API -->
 <div class="modal-overlay" id="modal-setup">
   <div class="modal">
@@ -1616,6 +1652,7 @@ function renderListaProgramas() {
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         ${!ativo ? `<button class="btn btn-secondary btn-sm" onclick="setModo('${p.id}')">Ativar</button>` : ''}
+        <button class="btn btn-secondary btn-sm" onclick="exportarPrograma('${p.id}')">Exportar</button>
         <button class="btn btn-secondary btn-sm" onclick="abrirModalPrograma('${p.id}')">Editar</button>
         <button class="btn btn-danger btn-sm" onclick="excluirPrograma('${p.id}')">×</button>
       </div>
@@ -4387,6 +4424,128 @@ function injetarGraficosProgresso() {
   // Inserir antes da seção de consistência
   const consist = panel.querySelector('.section-title');
   if (consist) panel.insertBefore(graficos, consist);
+}
+
+// ============================================================
+// COMPARTILHAMENTO DE PROGRAMAS (TAREFA 7)
+// ============================================================
+let _progParaExportar = null;
+
+function _montarExportPrograma(id) {
+  const prog = getPrograma(id);
+  if (!prog) return null;
+  const mats = getTodasMaterias(id).map(m => ({
+    nome: m.nome,
+    topicos: m.topicos || { n1:[], n2:[], n3:[] },
+    periodoId: m.periodoId || null
+  }));
+  return {
+    versao: '1.0',
+    tipo: 'programa',
+    exportadoEm: new Date().toISOString(),
+    programa: { nome: prog.nome, tipo: prog.tipo, instituicao: prog.instituicao || '', ano: prog.ano || '' },
+    materias: mats
+  };
+}
+
+function exportarPrograma(id) {
+  const data = _montarExportPrograma(id);
+  if (!data) return;
+  _progParaExportar = data;
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  document.getElementById('prog-share-code').value = code;
+  document.getElementById('modal-prog-share-sub').textContent =
+    `Programa "${data.programa.nome}" com ${data.materias.length} matéria(s).`;
+  document.getElementById('modal-prog-share-export').style.display = 'block';
+  document.getElementById('prog-import-code').value = '';
+  document.getElementById('modal-prog-share').classList.add('visible');
+}
+
+function abrirModalImportarPrograma() {
+  _progParaExportar = null;
+  document.getElementById('modal-prog-share-sub').textContent = 'Importe um programa compartilhado por outra pessoa.';
+  document.getElementById('modal-prog-share-export').style.display = 'none';
+  document.getElementById('prog-import-code').value = '';
+  document.getElementById('prog-import-file').value = '';
+  document.getElementById('modal-prog-share').classList.add('visible');
+}
+
+function fecharModalProgShare() {
+  document.getElementById('modal-prog-share').classList.remove('visible');
+}
+
+function copiarCodigoPrograma() {
+  const code = document.getElementById('prog-share-code').value;
+  navigator.clipboard.writeText(code).then(() => toast('✓ Código copiado'));
+}
+
+function downloadPrograma() {
+  if (!_progParaExportar) return;
+  const json = JSON.stringify(_progParaExportar, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const nomeSeg = _progParaExportar.programa.nome.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  a.href = url;
+  a.download = `programa_${nomeSeg}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ Arquivo baixado');
+}
+
+function lerArquivoPrograma(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      _executarImportPrograma(data);
+    } catch(_) { toast('Arquivo inválido — esperado JSON'); }
+  };
+  reader.readAsText(file);
+}
+
+function confirmarImportarPrograma() {
+  const input = document.getElementById('prog-import-code').value.trim();
+  if (!input) { toast('Cole o código do programa ou escolha um arquivo'); return; }
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(input))));
+    _executarImportPrograma(data);
+  } catch(_) { toast('Código inválido'); }
+}
+
+function _executarImportPrograma(data) {
+  if (!data || data.tipo !== 'programa' || !data.programa || !Array.isArray(data.materias)) {
+    toast('Formato inválido — não é um programa exportado pelo Estuda.AI'); return;
+  }
+  if (!data.programa.nome) { toast('Programa sem nome'); return; }
+  const novoProg = {
+    id: uid(),
+    nome: data.programa.nome + ' (importado)',
+    tipo: data.programa.tipo || 'concurso',
+    instituicao: data.programa.instituicao || '',
+    ano: data.programa.ano || '',
+    ativo: false
+  };
+  programas.push(novoProg);
+  data.materias.forEach(m => {
+    materias.push({
+      id: uid(),
+      nome: m.nome,
+      programaId: novoProg.id,
+      periodoId: null,
+      topicos: m.topicos || { n1:[], n2:[], n3:[] }
+    });
+  });
+  salvarProgramas();
+  salvarMaterias();
+  renderToggleProgramas();
+  renderListaProgramas();
+  preencherSelectProgramaModal();
+  fecharModalProgShare();
+  syncToSupabase();
+  toast(`✓ Programa "${novoProg.nome}" importado com ${data.materias.length} matéria(s)`);
 }
 
 // ============================================================
