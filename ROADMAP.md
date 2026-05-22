@@ -32,9 +32,9 @@
 | 6 | ~~Diagnóstico de lacunas de conhecimento~~ | ~~8h~~ | **feito** | `verificarSimulado()` registra acertos/erros por matéria em `lacunas`; `renderDiagnostico()` exibe ranking com barra de erro e ações diretas (Historinha / Revisar SM-2) no Dashboard e em Progresso |
 | 7 | ~~Compartilhamento de programas de estudo~~ | ~~6h~~ | **feito** | Export JSON (arquivo .json + código base64) e import (file picker ou código colado) com regeneração de IDs; modal integrado ao painel Programas |
 | 8 | ~~Estimativa de prontidão para a prova~~ | ~~4h~~ | **feito** | Widget no Dashboard: cobertura atual (lacunas+histórico), ritmo semanal, projeção até `prog.dataProva`; campo de data na modal de programa; mensagem adaptativa |
-| 9 | Suporte a LaTeX/MathJax nas respostas | 3h | pendente | Essencial para Economia (fórmulas em texto puro degradam o conteúdo) |
+| 9 | ~~Suporte a LaTeX/MathJax nas respostas~~ | ~~3h~~ | **feito** | MathJax 3 async; `$...$` inline e `$$...$$` bloco; MutationObserver nas result-boxes; override `verificarSimulado`; prompts instruem Claude a usar LaTeX |
 
-**Subtotal Fase 2: 3h restantes ≈ 0,2 dias**
+**Subtotal Fase 2: 0h restantes — Fase 2 concluída ✓**
 
 ---
 
@@ -72,12 +72,12 @@
 | Fase | Horas restantes | Dias (15h/dia) |
 |------|----------------:|---------------:|
 | Fase 1 — Fundação | **0h** | **concluída ✓** |
-| Fase 2 — Features diferenciadoras | 3h | 0,2 dias |
+| Fase 2 — Features diferenciadoras | **0h** | **concluída ✓** |
 | Fase 3 — Retenção e produto completo | 34h | 2,3 dias |
 | Fase 4 — Monetização | 28h | 1,9 dias |
-| **TOTAL RESTANTE** | **65h** | **~4,3 dias** |
+| **TOTAL RESTANTE** | **62h** | **~4,1 dias** |
 
-*(31h já entregues: token optimization + README + fix progId + unificação botões + testes + diagnóstico lacunas + compartilhamento de programas + prontidão para a prova)*
+*(34h já entregues: token optimization + README + fix progId + unificação botões + testes + diagnóstico lacunas + compartilhamento de programas + prontidão para a prova + LaTeX/MathJax)*
 
 ---
 

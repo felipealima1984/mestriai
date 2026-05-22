@@ -17,6 +17,9 @@ Exporte qualquer programa de estudos (incluindo todas as matérias e tópicos) c
 ### Estimativa de prontidão para a prova
 Widget no Dashboard que calcula e projeta a cobertura de conteúdo até a data do exame. Define a **data da prova** no modal de edição do programa. Exibe duas barras: cobertura atual (baseada em simulados e histórico de atividades) e estimativa na data da prova (projetada pelo ritmo semanal atual). A mensagem se adapta ao cenário: verde para cobertura alta, laranja para média, vermelho para baixa.
 
+### Suporte a LaTeX/MathJax
+Fórmulas matemáticas e econômicas renderizadas automaticamente em todo conteúdo gerado pela IA. Use `$...$` para notação inline (ex: `$E = mc^2$`, `$\frac{dQ}{dP}$`) e `$$...$$` para equações em bloco. Ativa automaticamente em historinhas, simulados, flashcards, correções de redação e material de PDF. Os prompts enviados ao Claude já incluem instrução para usar LaTeX quando o conteúdo tem fórmulas.
+
 ### Historinhas
 Gera narrativas curtas para memorização. O modelo recebe a matéria, a unidade (N1/N2/N3) e os tópicos cadastrados como contexto, produzindo uma história com personagens que cristaliza os conceitos em bullet points no final.
 
@@ -124,7 +127,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (110+ asserções, 21 seções):**
+**Cobertura (125+ asserções, 22 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -149,6 +152,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | Diagnóstico de lacunas | salvarLacunas, renderDiagnostico, ordenação, rastreamento pós-simulado |
 | Compartilhamento de programas | _montarExportPrograma (campos, isolamento de ids), round-trip export→import, validação de formato inválido |
 | Estimativa de prontidão | calcularProntidao: totalMaterias, coberturaAtual, diasRestantes (futuro/passado/null), estimadoFinal, detecção de matérias com lacunas |
+| LaTeX/MathJax | renderizarLatex (null-safe, sem MathJax), initLatexObserver, config inlineMath/displayMath, override verificarSimulado |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 
@@ -238,6 +242,16 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Histórico de versões
 
+### v1.8.0 — Suporte a LaTeX/MathJax
+- MathJax 3 carregado assincronamente via CDN (`tex-svg.js`) com config `startup.typeset: false` (não tipeseta automaticamente — só quando chamado)
+- Delimitadores configurados: `$...$` e `\(...\)` para inline; `$$...$$` e `\[...\]` para bloco
+- `renderizarLatex(el)` — função null-safe que chama `MathJax.typesetPromise([el])` quando disponível
+- `initLatexObserver()` — `MutationObserver` nas result-boxes (`result-historinha`, `result-redacao`, `result-material`, `result-plano`) observa mudança de classe para `visible`; observa `sim-questoes` para mudança de `childList` (disparado por `renderQuestoes`)
+- Override de `verificarSimulado` re-tipeseta o container de questões após revelar gabariotes (cobre LaTeX nos textos de explicação)
+- Prompts de historinha (CACD e Direito), simulado e material de PDF/texto instruem o Claude a usar LaTeX quando o conteúdo tem fórmulas
+- CSS: `mjx-container` com `overflow-x: auto` (fórmulas longas não transbordam em mobile) e `display: block` para equações em bloco
+- `tests.js` seção 22: 12+ asserções cobrindo null-safety, config, existência dos containers, override de verificarSimulado
+
 ### v1.7.0 — Estimativa de prontidão para a prova
 - Campo **Data da prova / conclusão** adicionado ao modal de edição/criação de programa (salvo em `prog.dataProva`)
 - Nova função `calcularProntidao(progId)` calcula: cobertura atual (matérias com atividade em `lacunas` ou `historico`), ritmo semanal (sessões / janela de 14 dias), dias restantes e estimativa de cobertura final com taxa de conversão de 40% (40% das sessões adicionam uma matéria nova, o restante são revisões)
@@ -318,7 +332,7 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Roadmap
 
-Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por atividade (~65h restantes).
+Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por atividade (~62h restantes).
 
 **Estratégia:** construir valor primeiro, monetizar por último.  
 **Regra de trabalho:** cada item inicia em branch dedicada → atualiza README → merge na main → push.
@@ -334,7 +348,7 @@ Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por 
 - [x] Diagnóstico de lacunas de conhecimento (tópicos com mais erros no simulado)
 - [x] Compartilhamento de programas de estudo (export/import JSON)
 - [x] Estimativa de prontidão para a prova
-- [ ] Suporte a LaTeX/MathJax nas respostas
+- [x] Suporte a LaTeX/MathJax nas respostas
 
 ### Fase 3 — Retenção e produto completo
 - [ ] PWA + Service Worker (instalação no celular, offline real)

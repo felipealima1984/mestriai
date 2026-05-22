@@ -6,6 +6,23 @@
 <title>Estuda.AI — CACD & Direito</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true,
+    packages: {'[+]': ['ams']}
+  },
+  options: {
+    skipHtmlTags: ['script','noscript','style','textarea','pre','code'],
+    ignoreHtmlClass: 'no-mathjax'
+  },
+  svg: { fontCache: 'global' },
+  startup: { typeset: false }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -133,6 +150,11 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
 .materia-fill{height:100%;border-radius:2px;transition:width .5s ease;}
 .fill-cacd{background:var(--cacd);}.fill-dir{background:var(--dir);}
 .materia-pct{font-size:11px;font-weight:600;width:30px;text-align:right;}
+
+/* MATHJAX / LATEX */
+mjx-container { overflow-x: auto; max-width: 100%; }
+mjx-container[display="true"] { margin: 0.6em 0; display: block; }
+mjx-container svg { color: var(--text); }
 
 /* PRONTIDÃO PARA A PROVA */
 .prontidao-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:24px;}
@@ -2409,6 +2431,7 @@ A historinha deve:
 - Introduzir os conceitos naturalmente na narrativa
 - Cobrir os pontos mais cobrados no CACD
 - Terminar com "CONCEITOS-CHAVE:" com bullet points secos: doutrina, tratados, casos, artigos
+- Se o conteúdo envolver fórmulas matemáticas ou econômicas, use notação LaTeX: inline com $...$ e bloco com $$...$$
 Escreva em português brasileiro. Sem introduções desnecessárias.`;
   } else {
     const matId = document.getElementById('dir-materia').value;
@@ -2429,6 +2452,7 @@ A historinha deve:
 - Introduzir os conceitos jurídicos de forma natural
 - Ser fiel à doutrina brasileira e ao Código vigente
 - Terminar com "CONCEITOS-CHAVE:" com bullet points: conceito, requisitos, artigos relevantes, jurisprudência se aplicável
+- Se o conteúdo envolver fórmulas ou cálculos, use notação LaTeX: inline com $...$ e bloco com $$...$$
 Escreva em português brasileiro. Sem introduções desnecessárias.`;
   }
 
@@ -2473,6 +2497,7 @@ async function gerarSimulado() {
 ${topicoCustom || ctx}
 ${escopoUnidade}
 ${armMap[armadilha]}
+Se o conteúdo envolver fórmulas matemáticas ou econômicas, use notação LaTeX nos campos de texto: inline com $...$ e bloco com $$...$$.
 
 Formato JSON puro (sem markdown):
 {"questoes":[{"enunciado":"texto","opcoes":["A) texto","B) texto","C) texto","D) texto","E) texto"],"gabarito":"A","explicacao":"explicação do gabarito e por que cada distrator está errado"}]}`;
@@ -2919,6 +2944,7 @@ Crie uma "historinha" de estudo:
 - Narrativa curta (2-4 parágrafos) com personagens e situações que ilustrem os conceitos do material
 - Cubra os pontos mais importantes do texto acima
 - Termine com "CONCEITOS-CHAVE:" com bullet points secos: definições, artigos, jurisprudência ou tratados mencionados
+- Se o conteúdo envolver fórmulas, use notação LaTeX: inline com $...$ e bloco com $$...$$
 Escreva em português brasileiro. Sem introduções desnecessárias.`;
   } else if (genOptSelecionada === 'flashcards') {
     prompt = `Com base no material de estudo sobre ${matNome} (${frenteLabel} — Unidade ${unidade}):
@@ -2935,6 +2961,7 @@ Regras:
 - Respostas com no máximo 3 linhas
 - Cobrir os pontos mais importantes do material
 - Variar entre definições, aplicações, comparações e consequências jurídicas
+- Se o conteúdo envolver fórmulas, use notação LaTeX: inline com $...$ e bloco com $$...$$
 Apenas JSON, sem markdown.`;
   } else {
     prompt = `Com base no material de estudo sobre ${matNome} (${frenteLabel} — Unidade ${unidade}):
@@ -2950,6 +2977,7 @@ Regras:
 - Questões baseadas estritamente no conteúdo do material
 - Distradores plausíveis mas claramente incorretos para quem leu
 - Explicação didática e direta
+- Se o conteúdo envolver fórmulas, use notação LaTeX: inline com $...$ e bloco com $$...$$
 Apenas JSON, sem markdown.`;
   }
 
@@ -4470,6 +4498,45 @@ function injetarGraficosProgresso() {
 }
 
 // ============================================================
+// SUPORTE A LATEX / MATHJAX (TAREFA 9)
+// ============================================================
+
+function renderizarLatex(el) {
+  if (!el) return;
+  if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+    MathJax.typesetPromise([el]).catch(() => {});
+  }
+}
+
+function initLatexObserver() {
+  if (typeof MutationObserver === 'undefined') return;
+  const obs = new MutationObserver(muts => {
+    muts.forEach(m => {
+      if (m.type === 'attributes') {
+        if (m.target.classList.contains('visible')) renderizarLatex(m.target);
+      } else if (m.type === 'childList' && m.addedNodes.length) {
+        renderizarLatex(m.target);
+      }
+    });
+  });
+  // Observar result-boxes — disparam ao ficarem visíveis (class="visible")
+  ['result-historinha', 'result-redacao', 'result-material', 'result-plano'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) obs.observe(el, { attributes: true, attributeFilter: ['class'] });
+  });
+  // Observar area de questões — dispara quando renderQuestoes() seta innerHTML
+  const simEl = document.getElementById('sim-questoes');
+  if (simEl) obs.observe(simEl, { childList: true });
+}
+
+// Após verificarSimulado revelar gabariotes, re-processa LaTeX no container
+const _origVerificarSimulado = verificarSimulado;
+verificarSimulado = function() {
+  _origVerificarSimulado();
+  renderizarLatex(document.getElementById('sim-questoes'));
+};
+
+// ============================================================
 // ESTIMATIVA DE PRONTIDÃO PARA A PROVA (TAREFA 8)
 // ============================================================
 
@@ -4749,6 +4816,7 @@ function initNovosRecursos() {
   verificarResetMensal();
   renderUsageBar();
   verificarImportURL();
+  initLatexObserver();
   injetarGraficosProgresso();
   renderPlanosSalvos();
   // Preencher select de programa no plano
