@@ -193,6 +193,10 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Histórico de versões
 
+### v1.4.2 — Unificação de botões de programa no painel Matérias
+- Eliminado o row duplicado de botões de programa: o `prog-toggle` da topbar é ocultado quando o usuário está no painel Matérias, pois o `mat-tabs-container` já cobre tanto a seleção de programa quanto a navegação para Períodos
+- `switchMatTab()` agora chama `setModo()` ao trocar de programa, mantendo o estado global (`programaAtivoId`) sincronizado com a aba selecionada
+
 ### v1.4.1 — Fix progId + testes
 - Corrigido `ReferenceError: progId is not defined` em `sincronizarPaineisModo()`: a variável era referenciada como livre; substituída por `programaAtivoId` (que já está definido no escopo global antes da chamada)
 - Adicionado `tests.js` com smoke tests executáveis no console do navegador (uid, getPrograma, setModo, switchMatTab, getMaterias, isPremium, sm2, getNivel, contarGeracao)
@@ -248,7 +252,7 @@ Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por 
 - [x] Otimizar `max_tokens` por tipo de chamada à API
 - [x] Atualizar README para v1.4
 - [x] Fix bug `progId is not defined` ao duplicar aba de Matérias
-- [ ] Unificar rows de botões de programa no painel Matérias
+- [x] Unificar rows de botões de programa no painel Matérias
 - [ ] Testes automatizados básicos (`tests.js`)
 
 ### Fase 2 — Features diferenciadoras
