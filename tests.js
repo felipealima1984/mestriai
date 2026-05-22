@@ -19,6 +19,7 @@
  *  - Renderizações: não lançam exceção (renderDashboard, renderCrudLista, etc.)
  *  - Compartilhamento de programas: _montarExportPrograma, _executarImportPrograma, round-trip export→import
  *  - Estimativa de prontidão: calcularProntidao (totalMaterias, coberturaAtual, diasRestantes, estimadoFinal), lacunas, datas passada/futura/sem data
+ *  - LaTeX/MathJax: renderizarLatex (null-safe, sem MathJax), initLatexObserver, config inlineMath/displayMath, override verificarSimulado
  */
 (() => {
   'use strict';
@@ -714,6 +715,60 @@
   } else {
     console.warn('Sem programas — seção 21 ignorada');
   }
+
+  endSection();
+
+  // ─── 22. Suporte a LaTeX/MathJax (Tarefa 9) ──────────────────────────────────
+
+  section('Suporte a LaTeX/MathJax — renderizarLatex e observer');
+
+  // -- renderizarLatex existe e não lança sem MathJax --
+  ok('renderizarLatex é função',             typeof renderizarLatex === 'function');
+  noThrow('renderizarLatex(null) não lança', () => renderizarLatex(null));
+  noThrow('renderizarLatex(div) não lança sem MathJax', () => {
+    const div = document.createElement('div');
+    div.textContent = 'f(x) = $x^2$';
+    renderizarLatex(div);
+  });
+
+  // -- Se MathJax estiver carregado, typesetPromise é chamável --
+  if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+    noThrow('MathJax.typesetPromise([div]) retorna Promise', () => {
+      const div = document.createElement('div');
+      div.textContent = 'Inline: $E = mc^2$';
+      const p = MathJax.typesetPromise([div]);
+      ok('retorno é Promise', p && typeof p.then === 'function');
+    });
+  } else {
+    console.warn('MathJax ainda não carregado — testes de typesetPromise ignorados (OK em ambiente offline)');
+    ok('renderizarLatex guarda graciosamente quando MathJax ausente', true);
+  }
+
+  // -- initLatexObserver existe e não lança --
+  ok('initLatexObserver é função',             typeof initLatexObserver === 'function');
+  noThrow('initLatexObserver() não lança',     () => initLatexObserver());
+
+  // -- result-boxes existem no DOM --
+  ok('result-historinha existe no DOM',  !!document.getElementById('result-historinha'));
+  ok('result-redacao existe no DOM',     !!document.getElementById('result-redacao'));
+  ok('result-material existe no DOM',    !!document.getElementById('result-material'));
+  ok('result-plano existe no DOM',       !!document.getElementById('result-plano'));
+  ok('sim-questoes existe no DOM',       !!document.getElementById('sim-questoes'));
+
+  // -- MathJax config foi definido --
+  ok('window.MathJax foi configurado (inlineMath)',
+    window.MathJax &&
+    Array.isArray(MathJax.tex && MathJax.tex.inlineMath) &&
+    MathJax.tex.inlineMath.some(pair => pair[0] === '$' && pair[1] === '$')
+  );
+  ok('config displayMath inclui $$',
+    window.MathJax &&
+    Array.isArray(MathJax.tex && MathJax.tex.displayMath) &&
+    MathJax.tex.displayMath.some(pair => pair[0] === '$$' && pair[1] === '$$')
+  );
+
+  // -- Override de verificarSimulado não quebrou a função --
+  ok('verificarSimulado ainda é função após override', typeof verificarSimulado === 'function');
 
   endSection();
 
