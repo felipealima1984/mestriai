@@ -101,6 +101,7 @@ estuda-ai/
 ├── README.md                         # Este arquivo
 ├── ROADMAP.md                        # Lista priorizada de melhorias com estimativas de horas
 ├── ROADMAP.docx                      # Versão impressa do roadmap
+├── tests.js                          # Smoke tests — cole no console do navegador para executar
 ├── supabase-schema.sql               # Schema inicial do banco
 ├── supabase-migration-periodos.sql   # Migration: tabela periodos + periodo_id
 └── SUPABASE-SETUP.md                 # Guia passo a passo de configuração
@@ -192,6 +193,10 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Histórico de versões
 
+### v1.4.1 — Fix progId + testes
+- Corrigido `ReferenceError: progId is not defined` em `sincronizarPaineisModo()`: a variável era referenciada como livre; substituída por `programaAtivoId` (que já está definido no escopo global antes da chamada)
+- Adicionado `tests.js` com smoke tests executáveis no console do navegador (uid, getPrograma, setModo, switchMatTab, getMaterias, isPremium, sm2, getNivel, contarGeracao)
+
 ### v1.4 — Programas dinâmicos, SM-2, gamificação e freemium
 - Múltiplos programas de estudo (CACD, Direito, qualquer concurso)
 - Revisão espaçada com algoritmo SM-2
@@ -242,7 +247,7 @@ Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por 
 ### Fase 1 — Fundação *(em andamento)*
 - [x] Otimizar `max_tokens` por tipo de chamada à API
 - [x] Atualizar README para v1.4
-- [ ] Fix bug `progId is not defined` ao duplicar aba de Matérias
+- [x] Fix bug `progId is not defined` ao duplicar aba de Matérias
 - [ ] Unificar rows de botões de programa no painel Matérias
 - [ ] Testes automatizados básicos (`tests.js`)
 
