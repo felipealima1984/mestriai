@@ -1845,6 +1845,10 @@ function goTo(panel, el) {
     if (found) found.classList.add('active');
   }
   document.getElementById('topbar-title').textContent = TITULOS[panel] || panel;
+  // No painel Matérias, mat-tabs-container já cobre a seleção de programa;
+  // esconder prog-toggle da topbar para evitar o row duplicado.
+  const progToggle = document.getElementById('prog-toggle');
+  if (progToggle) progToggle.style.display = panel === 'materias' ? 'none' : '';
   if (panel === 'materias') { renderMatTabs(); renderCrudLista(); }
   if (panel === 'programas') renderListaProgramas();
   if (panel === 'progresso') { renderProgresso(); setTimeout(injetarGraficosProgresso, 100); }
@@ -2027,6 +2031,7 @@ function switchSimTab(t) {
 
 function switchMatTab(t) {
   matTabAtual = t;
+  if (t !== 'periodos' && getPrograma(t)) setModo(t);
   // Atualizar abas — agora são dinâmicas (prog IDs + periodos)
   document.querySelectorAll('[data-mat-tab]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.matTab === t);

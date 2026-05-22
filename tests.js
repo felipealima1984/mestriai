@@ -81,6 +81,27 @@
     console.error('Exceção em switchMatTab():', e);
   }
   ok('switchMatTab() não lança exceção', !switchErro);
+  if (programas.length > 0) {
+    const p0 = programas[0];
+    switchMatTab(p0.id);
+    ok('switchMatTab(progId) sincroniza programaAtivoId via setModo()', programaAtivoId === p0.id);
+  }
+  switchMatTab('periodos');
+  ok('switchMatTab("periodos") não altera programaAtivoId', programaAtivoId !== 'periodos');
+  endSection();
+
+  // ─── BUG FIX 2 — unificação do row de botões (prog-toggle oculto no materias) ──
+
+  section('BUG FIX 2 — prog-toggle oculto no painel Matérias');
+  const toggleEl = document.getElementById('prog-toggle');
+  if (toggleEl) {
+    goTo('materias', null);
+    ok('prog-toggle oculto ao entrar em Matérias', toggleEl.style.display === 'none');
+    goTo('dashboard', null);
+    ok('prog-toggle visível ao sair de Matérias', toggleEl.style.display !== 'none');
+  } else {
+    console.warn('prog-toggle não encontrado — testes ignorados');
+  }
   endSection();
 
   // ─── getMaterias() ────────────────────────────────────────────────────────────
