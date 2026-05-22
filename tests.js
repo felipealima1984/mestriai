@@ -23,6 +23,7 @@
  *  - PWA: link manifest, meta theme-color/apple/mobile, apple-touch-icon, banner de atualização, navigator.serviceWorker
  *  - Logo imagem: elementos #logo-sidebar e #logo-auth (img tags), atualizarLogoTema, troca de src por tema
  *  - Notificações SM-2: contarCardsDue, atualizarBotaoNotif, ativar/desativar/toggle, verificarNotificacoes, #btn-notif
+ *  - Onboarding wizard: initOnboarding, onbSelecionarTipo, onbRenderStep, onbNext/Back/Skip/Fechar, elementos DOM do wizard
  */
 (() => {
   'use strict';
@@ -928,6 +929,84 @@
     const btn = document.getElementById('btn-notif');
     ok('botão mostra OFF quando desativado', btn && btn.textContent.includes('OFF'));
     ok('botão não tem classe notif-ativo quando OFF', btn && !btn.classList.contains('notif-ativo'));
+  });
+
+  endSection();
+
+  // ─── SEÇÃO 26 — Onboarding Wizard ───────────────────────────────────────────
+
+  startSection('26 — Onboarding Wizard');
+
+  // Funções existem
+  ok('initOnboarding é função', typeof initOnboarding === 'function');
+  ok('onbSelecionarTipo é função', typeof onbSelecionarTipo === 'function');
+  ok('onbRenderStep é função', typeof onbRenderStep === 'function');
+  ok('onbNext é função', typeof onbNext === 'function');
+  ok('onbBack é função', typeof onbBack === 'function');
+  ok('onbPularMateria é função', typeof onbPularMateria === 'function');
+  ok('onbSkip é função', typeof onbSkip === 'function');
+  ok('onbFechar é função', typeof onbFechar === 'function');
+  ok('onbGerarHistorinha é função', typeof onbGerarHistorinha === 'function');
+
+  // Elementos DOM existem
+  ok('#onb-overlay existe', !!document.getElementById('onb-overlay'));
+  ok('#onb-step-1 existe', !!document.getElementById('onb-step-1'));
+  ok('#onb-step-2 existe', !!document.getElementById('onb-step-2'));
+  ok('#onb-step-3 existe', !!document.getElementById('onb-step-3'));
+  ok('#onb-dot-1 existe', !!document.getElementById('onb-dot-1'));
+  ok('#onb-prog-nome existe', !!document.getElementById('onb-prog-nome'));
+  ok('#onb-mat-nome existe', !!document.getElementById('onb-mat-nome'));
+  ok('#onb-check-prog-txt existe', !!document.getElementById('onb-check-prog-txt'));
+
+  // initOnboarding — não mostra se onboarding_done está setado
+  noThrow('initOnboarding() não mostra overlay se done', () => {
+    const prev = localStorage.getItem('estuda_onboarding_done');
+    localStorage.setItem('estuda_onboarding_done', '1');
+    document.getElementById('onb-overlay').style.display = 'none';
+    initOnboarding();
+    ok('overlay permanece oculto com done=1', document.getElementById('onb-overlay').style.display === 'none');
+    if (prev === null) localStorage.removeItem('estuda_onboarding_done');
+    else localStorage.setItem('estuda_onboarding_done', prev);
+  });
+
+  // onbSelecionarTipo — alterna classe sel
+  noThrow('onbSelecionarTipo troca seleção', () => {
+    onbSelecionarTipo('livre');
+    ok('onbt-livre tem classe sel', document.getElementById('onbt-livre').classList.contains('sel'));
+    ok('onbt-concurso não tem classe sel', !document.getElementById('onbt-concurso').classList.contains('sel'));
+    onbSelecionarTipo('concurso'); // restaura
+  });
+
+  // onbRenderStep — controla visibilidade e dots
+  noThrow('onbRenderStep(2) mostra passo 2', () => {
+    onbRenderStep(2);
+    ok('step-2 visível', document.getElementById('onb-step-2').style.display !== 'none');
+    ok('step-1 oculto', document.getElementById('onb-step-1').style.display === 'none');
+    ok('dot-1 tem classe ativo', document.getElementById('onb-dot-1').classList.contains('ativo'));
+    ok('dot-2 tem classe ativo', document.getElementById('onb-dot-2').classList.contains('ativo'));
+    ok('dot-3 NÃO tem classe ativo', !document.getElementById('onb-dot-3').classList.contains('ativo'));
+    onbRenderStep(1); // restaura
+  });
+
+  // onbSkip — fecha overlay e marca done
+  noThrow('onbSkip() fecha overlay e seta done', () => {
+    localStorage.removeItem('estuda_onboarding_done');
+    document.getElementById('onb-overlay').style.display = 'flex';
+    onbSkip();
+    ok('overlay oculto após skip', document.getElementById('onb-overlay').style.display === 'none');
+    ok('estuda_onboarding_done setado após skip', localStorage.getItem('estuda_onboarding_done') === '1');
+    localStorage.removeItem('estuda_onboarding_done');
+  });
+
+  // onbNext passo 1 sem nome — exige nome
+  noThrow('onbNext() sem nome não avança', () => {
+    onbRenderStep(1);
+    const inp = document.getElementById('onb-prog-nome');
+    const prevVal = inp.value;
+    inp.value = '';
+    onbNext();
+    ok('permanece no passo 1 sem nome', document.getElementById('onb-step-1').style.display !== 'none');
+    inp.value = prevVal;
   });
 
   endSection();
