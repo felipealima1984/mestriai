@@ -117,6 +117,9 @@ estuda-ai/
 ├── icons/
 │   ├── icon-192.svg                  # Ícone PWA 192×192 (any)
 │   └── icon-512.svg                  # Ícone PWA 512×512 (any maskable)
+├── img/
+│   ├── logo_fundo_preto.png          # Logo para tema escuro (fundo dark)
+│   └── logo_fundo_transparente.png   # Logo para temas claro/cinza (fundo transparente)
 ├── README.md                         # Este arquivo
 ├── ROADMAP.md                        # Lista priorizada de melhorias com estimativas de horas
 ├── ROADMAP.docx                      # Versão impressa do roadmap
@@ -137,7 +140,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (140+ asserções, 23 seções):**
+**Cobertura (153+ asserções, 24 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -164,6 +167,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | Estimativa de prontidão | calcularProntidao: totalMaterias, coberturaAtual, diasRestantes (futuro/passado/null), estimadoFinal, detecção de matérias com lacunas |
 | LaTeX/MathJax | renderizarLatex (null-safe, sem MathJax), initLatexObserver, config inlineMath/displayMath, override verificarSimulado |
 | PWA | link manifest, meta theme-color/apple/mobile, apple-touch-icon, banner de atualização, navigator.serviceWorker |
+| Logo imagem | #logo-sidebar e #logo-auth (img tags), atualizarLogoTema, troca de src por tema (dark/gray/light) |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 
@@ -252,6 +256,13 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 ---
 
 ## Histórico de versões
+
+### v1.10.0 — Logo com imagem (adaptação por tema)
+- Textos "Estuda.AI" no cabeçalho da sidebar e na tela de login substituídos por `<img>` tags
+- `img/logo_fundo_preto.png` usado no tema escuro; `img/logo_fundo_transparente.png` nos temas cinza e claro
+- `atualizarLogoTema(t)` troca `src` dos elementos `#logo-sidebar` e `#logo-auth` ao mudar tema
+- `setTheme()` chama `atualizarLogoTema()` automaticamente a cada troca de tema
+- `tests.js` seção 24: 13 asserções — presença dos img tags, atributos alt, troca de src por tema
 
 ### v1.9.0 — PWA: instalação e modo offline
 - `manifest.json` com nome, ícones, `display: standalone`, `theme_color: #c8a96e` e atalhos de teclado (Historinha e Simulado)

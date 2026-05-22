@@ -21,6 +21,7 @@
  *  - Estimativa de prontidão: calcularProntidao (totalMaterias, coberturaAtual, diasRestantes, estimadoFinal), lacunas, datas passada/futura/sem data
  *  - LaTeX/MathJax: renderizarLatex (null-safe, sem MathJax), initLatexObserver, config inlineMath/displayMath, override verificarSimulado
  *  - PWA: link manifest, meta theme-color/apple/mobile, apple-touch-icon, banner de atualização, navigator.serviceWorker
+ *  - Logo imagem: elementos #logo-sidebar e #logo-auth (img tags), atualizarLogoTema, troca de src por tema
  */
 (() => {
   'use strict';
@@ -826,6 +827,42 @@
       ok('sw.js não acessível em file:// (esperado)', true);
     }
   });
+
+  endSection();
+
+  // ─── SEÇÃO 24 — Logo imagem (tema) ──────────────────────────────────────────
+
+  startSection('24 — Logo imagem (tema)');
+
+  ok('logo-sidebar existe no DOM', !!document.getElementById('logo-sidebar'));
+  ok('logo-auth existe no DOM', !!document.getElementById('logo-auth'));
+
+  const sidebarLogo = document.getElementById('logo-sidebar');
+  const authLogo    = document.getElementById('logo-auth');
+
+  ok('logo-sidebar é um <img>', sidebarLogo && sidebarLogo.tagName === 'IMG');
+  ok('logo-auth é um <img>', authLogo && authLogo.tagName === 'IMG');
+
+  ok('logo-sidebar tem alt="Estuda.AI"', sidebarLogo && sidebarLogo.alt === 'Estuda.AI');
+  ok('logo-auth tem alt="Estuda.AI"',    authLogo && authLogo.alt === 'Estuda.AI');
+
+  ok('atualizarLogoTema é uma função', typeof atualizarLogoTema === 'function');
+
+  // Verifica troca de src ao mudar tema
+  setTheme('dark');
+  ok('tema dark → sidebar usa logo_fundo_preto', (document.getElementById('logo-sidebar')||{}).src && document.getElementById('logo-sidebar').src.includes('logo_fundo_preto'));
+  ok('tema dark → auth usa logo_fundo_preto',    (document.getElementById('logo-auth')||{}).src && document.getElementById('logo-auth').src.includes('logo_fundo_preto'));
+
+  setTheme('gray');
+  ok('tema gray → sidebar usa logo_fundo_transparente', (document.getElementById('logo-sidebar')||{}).src && document.getElementById('logo-sidebar').src.includes('logo_fundo_transparente'));
+  ok('tema gray → auth usa logo_fundo_transparente',    (document.getElementById('logo-auth')||{}).src && document.getElementById('logo-auth').src.includes('logo_fundo_transparente'));
+
+  setTheme('light');
+  ok('tema light → sidebar usa logo_fundo_transparente', (document.getElementById('logo-sidebar')||{}).src && document.getElementById('logo-sidebar').src.includes('logo_fundo_transparente'));
+  ok('tema light → auth usa logo_fundo_transparente',    (document.getElementById('logo-auth')||{}).src && document.getElementById('logo-auth').src.includes('logo_fundo_transparente'));
+
+  // Restaurar tema original
+  setTheme(localStorage.getItem('estuda_theme') || 'dark');
 
   endSection();
 

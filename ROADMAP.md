@@ -44,6 +44,7 @@
 | # | Atividade | Horas | Status | Notas |
 |---|-----------|------:|--------|-------|
 | 10 | ~~PWA: `manifest.json` + Service Worker offline~~ | ~~6h~~ | **feito** | `manifest.json` + `sw.js` cache-first; ícones SVG 192/512 maskable; meta tags iOS; banner de nova versão |
+| 10b | ~~Logo com imagem (adaptação por tema)~~ | ~~2h~~ | **feito** | `<img>` nos lugares de "Estuda.AI" na sidebar e login; `atualizarLogoTema()` troca src dark↔light automaticamente |
 | 11 | Push notifications para revisão SM-2 | 8h | pendente | Lembrete no dia correto; SM-2 perde metade do valor sem o alerta |
 | 12 | Onboarding wizard para novos usuários | 6h | pendente | Wizard 3 passos: criar programa → matéria → primeira historinha |
 | 13 | Histórico de notas das redações com gráfico | 4h | pendente | Chart.js já disponível; salvar nota por redação no Supabase |
@@ -77,7 +78,7 @@
 | Fase 4 — Monetização | 28h | 1,9 dias |
 | **TOTAL RESTANTE** | **56h** | **~3,7 dias** |
 
-*(40h já entregues: token optimization + README + fix progId + unificação botões + testes + diagnóstico lacunas + compartilhamento de programas + prontidão para a prova + LaTeX/MathJax + PWA)*
+*(42h já entregues: token optimization + README + fix progId + unificação botões + testes + diagnóstico lacunas + compartilhamento de programas + prontidão para a prova + LaTeX/MathJax + PWA + logo imagem)*
 
 ---
 
