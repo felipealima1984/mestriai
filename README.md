@@ -1,18 +1,21 @@
 # Estuda.AI
 
-Aplicação web single-file para estudos de **CACD 2027** e **Direito** (Faculdade Nova Roma), com geração de conteúdo via IA, simulados, redação dissertativa, gerenciamento de matérias por período/unidade e sincronização via Supabase.
+Plataforma web de estudos com IA para qualquer concurso ou matéria — CACD, Direito, OAB, concursos públicos ou estudo livre. Single-file, sem build, sem dependências de npm.
 
-Hospedada em **GitHub Pages** — sem backend próprio, sem build, sem dependências de npm.
+Hospedada em **GitHub Pages** — sem backend próprio.
 
 ---
 
 ## Funcionalidades
 
+### Múltiplos programas de estudo
+Crie quantos programas quiser (CACD, Direito, qualquer concurso). Cada programa tem suas matérias, tópicos e configurações independentes. Um seletor rápido na sidebar alterna entre eles.
+
 ### Historinhas
-Gera narrativas curtas para memorização de conteúdo jurídico e diplomático. O modelo recebe a matéria, a unidade (N1/N2/N3) e os tópicos cadastrados como contexto, produzindo uma história com personagens e situações que cristaliza os conceitos no final em bullet points.
+Gera narrativas curtas para memorização. O modelo recebe a matéria, a unidade (N1/N2/N3) e os tópicos cadastrados como contexto, produzindo uma história com personagens que cristaliza os conceitos em bullet points no final.
 
 ### Simulados
-Questões de múltipla escolha no padrão CACD com gabarito comentado. Suporta três tipos de armadilha identificados nas edições anteriores do concurso:
+Questões de múltipla escolha com gabarito comentado. Suporta três tipos de armadilha do CACD:
 
 | Armadilha | Descrição |
 |-----------|-----------|
@@ -21,26 +24,27 @@ Questões de múltipla escolha no padrão CACD com gabarito comentado. Suporta t
 | Inversão causa-efeito | Distrator que inverte a relação causal correta |
 
 ### Redação CACD
-Geração de tema dissertativo com instruções e critérios de avaliação. Aceita a redação do usuário e devolve correção com notas em cinco critérios: argumentação, conhecimento de política internacional, estrutura dissertativa, coesão e perfil diplomático.
+Geração de tema dissertativo com instruções e critérios. Aceita a redação do usuário e devolve correção com notas em cinco critérios: argumentação, conhecimento de política internacional, estrutura dissertativa, coesão e perfil diplomático.
 
 ### Material de Estudo (PDF / Texto)
-Upload de PDF ou texto colado manualmente. A partir do conteúdo inserido, gera à escolha:
+Upload de PDF ou texto colado manualmente. Gera à escolha:
 - **Historinha** — resumo narrativo para memorização
-- **Flashcards** — deck interativo de perguntas e respostas, cada card abre e fecha com clique
-- **Questões** — múltipla escolha com gabarito revelado para revisão imediata
+- **Flashcards** — deck interativo, cada card abre e fecha com clique
+- **Questões** — múltipla escolha com gabarito revelado
 
 O conteúdo gerado pode ser salvo e consultado na aba "Materiais salvos".
 
+### Revisão Espaçada (SM-2)
+Deck de flashcards com algoritmo SM-2. Avalia dificuldade (fácil/médio/difícil) e agenda o próximo intervalo de revisão automaticamente.
+
+### Gamificação
+XP por atividade, níveis de progresso, streaks de dias consecutivos e baralhos desbloqueáveis. Painel de conquistas na sidebar.
+
+### Plano de Estudos gerado por IA
+Gera um cronograma semanal personalizado com base nas matérias cadastradas, data da prova e horas disponíveis por dia. Premium only.
+
 ### Matérias & Períodos (CRUD)
-Gerenciamento completo de matérias para CACD e Direito em listas separadas, com três abas:
-
-**CACD** — matérias do concurso diplomático, sem períodos.
-
-**Direito** — matérias da graduação, filtradas pelo período ativo. Cada matéria pode ser vinculada a um período específico do curso.
-
-**Períodos** — CRUD dos períodos de graduação (1º ao 10º). Um período pode ser marcado como ativo; ao ativá-lo, apenas as matérias vinculadas a ele aparecem nos selects de Historinhas, Simulados e Material de Estudo. Um seletor rápido na sidebar permite trocar o período ativo sem entrar no CRUD.
-
-Cada matéria possui tópicos organizados por unidade de avaliação:
+Gerenciamento completo de matérias com três unidades de avaliação:
 
 | Unidade | Escopo na prova |
 |---------|----------------|
@@ -48,10 +52,14 @@ Cada matéria possui tópicos organizados por unidade de avaliação:
 | N2 | Conteúdo próprio + pode revisar N1 |
 | N3 | Conteúdo novo + pode cobrar tudo do semestre |
 
-Os tópicos cadastrados são injetados automaticamente no prompt da IA — sem necessidade de digitar contexto manualmente a cada geração.
+Para programas de graduação: períodos (1º ao 10º) com filtro automático de matérias. Um período marcado como ativo filtra o conteúdo em Historinhas, Simulados e Material de Estudo.
+
+### Freemium
+- **Free:** 10 gerações/mês, 1 programa de estudos, sem plano gerado por IA
+- **Premium:** gerações ilimitadas, múltiplos programas, plano de estudos por IA
 
 ### Autenticação e Sincronização (Supabase)
-Login com email e senha via Supabase Auth. Todos os dados (matérias, períodos, historinhas salvas, materiais, stats, histórico e preferências) são sincronizados em tempo real com o banco PostgreSQL do Supabase.
+Login com email e senha. Todos os dados sincronizam em tempo real com o banco PostgreSQL do Supabase.
 
 Estratégia offline/online:
 - **Online + autenticado** → lê do Supabase ao abrir, grava a cada ação
@@ -59,16 +67,14 @@ Estratégia offline/online:
 - **Reconexão** → sincroniza automaticamente
 - **Sem login** → modo offline completo via localStorage
 
-O badge de status na topbar indica o estado atual em tempo real.
-
 ### Temas de interface
 Três temas com preferência salva entre sessões:
 - **Escuro** — padrão, fundo quase preto
 - **Cinza** — bege-acinzentado, contraste reduzido para leitura longa
 - **Claro** — off-white com texto escuro
 
-### Progresso
-Contador de historinhas geradas, questões respondidas, taxa de acerto e redações. Histórico das últimas 30 atividades com data e tipo.
+### Progresso e Dashboard
+Contador de historinhas, questões respondidas, taxa de acerto e redações. Histórico das últimas 30 atividades. Gráficos de evolução via Chart.js.
 
 ---
 
@@ -81,9 +87,9 @@ Contador de historinhas geradas, questões respondidas, taxa de acerto e redaç�
 | Banco de dados | Supabase (PostgreSQL) + localStorage como fallback |
 | Auth | Supabase Auth (email/senha) |
 | Hospedagem | GitHub Pages |
-| Dependências externas | Supabase JS SDK v2 · Google Fonts |
+| Dependências externas | Supabase JS SDK v2 · Chart.js · Google Fonts |
 
-Arquivo principal: `index.html` — sem `package.json`, sem build, sem servidor próprio.
+Arquivo principal: `index.html` (~4300 linhas) — sem `package.json`, sem build, sem servidor próprio.
 
 ---
 
@@ -93,6 +99,8 @@ Arquivo principal: `index.html` — sem `package.json`, sem build, sem servidor 
 estuda-ai/
 ├── index.html                        # App completo (single-file)
 ├── README.md                         # Este arquivo
+├── ROADMAP.md                        # Lista priorizada de melhorias com estimativas de horas
+├── ROADMAP.docx                      # Versão impressa do roadmap
 ├── supabase-schema.sql               # Schema inicial do banco
 ├── supabase-migration-periodos.sql   # Migration: tabela periodos + periodo_id
 └── SUPABASE-SETUP.md                 # Guia passo a passo de configuração
@@ -127,23 +135,17 @@ O guia completo está em `SUPABASE-SETUP.md`.
 1. Acesse [console.anthropic.com](https://console.anthropic.com) → API Keys → criar nova chave
 2. No app: ⚙ Configurar API → campo "Chave Anthropic" → salvar
 
-**Modelo:** `claude-haiku-4-5` — mais econômico da família Claude.
-**Custo estimado:** ~$0.001 por historinha. 100 historinhas + 50 simulados/mês ≈ R$0,80.
+**Modelo:** `claude-haiku-4-5-20251001` — mais econômico da família Claude.  
+**max_tokens por tipo:** historinha 800 · simulado 1500 · tema redação 400 · correção redação 1000 · flashcards 1000 · plano de estudos 3000.
 
 ---
 
 ## Publicação no GitHub Pages
 
 ```bash
-# Renomear se necessário
-mv estuda-ai.html index.html
-
-# Subir
 git add .
-git commit -m "feat: Estuda.AI"
+git commit -m "feat: descrição"
 git push origin main
-
-# Ativar Pages
 # Repositório → Settings → Pages → Branch: main → Save
 ```
 
@@ -153,29 +155,11 @@ Lembre de adicionar essa URL em **Supabase → Authentication → URL Configurat
 
 ---
 
-## Matérias pré-carregadas
-
-### CACD
-- Direito Internacional Público
-- Direito Internacional Privado
-- Economia
-- História do Brasil
-- Política Internacional
-
-### Direito (Nova Roma — 4º Período)
-- Direito Penal — Crimes em Espécie
-- Direito Civil — Contratos em Espécie
-- MARC — Mediação e Arbitragem
-
-Novas matérias, períodos e tópicos são gerenciados diretamente no app, sem editar código.
-
----
-
 ## Banco de dados — tabelas
 
 | Tabela | Conteúdo |
 |--------|----------|
-| `materias` | Matérias CACD e Direito com tópicos N1/N2/N3 e vínculo de período |
+| `materias` | Matérias por usuário e programa com tópicos N1/N2/N3 e vínculo de período |
 | `periodos` | Períodos de graduação (1º ao 10º) com flag de ativo |
 | `historinhas` | Historinhas salvas manualmente |
 | `materiais_salvos` | Conteúdo gerado de PDF/texto (historinha, flashcards, questões) |
@@ -207,6 +191,15 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 ---
 
 ## Histórico de versões
+
+### v1.4 — Programas dinâmicos, SM-2, gamificação e freemium
+- Múltiplos programas de estudo (CACD, Direito, qualquer concurso)
+- Revisão espaçada com algoritmo SM-2
+- Gamificação: XP, níveis, streaks, baralhos
+- Quiz interativo por matéria
+- Dashboard com gráficos de progresso (Chart.js)
+- Modelo freemium: plano free (10 gerações/mês, 1 programa) e premium
+- Plano de estudos gerado por IA (premium)
 
 ### v1.3 — Períodos de graduação
 - CRUD de períodos (1º ao 10º) vinculados às matérias de Direito
@@ -241,11 +234,17 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Roadmap
 
-- [ ] Deck de repetição espaçada (flashcards com algoritmo SM-2)
-- [ ] Histórico de notas das redações com gráfico de evolução
+Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas.
+
+**Próximos passos prioritários:**
+- [ ] Integração Stripe real (substituir `ativarPremiumDemo()`)
+- [ ] Proxy API via Supabase Edge Function (chave da plataforma, não do usuário)
+- [ ] PWA + Service Worker (instalação no celular, offline real)
+- [ ] Push notifications para revisão SM-2
+- [ ] Onboarding wizard para novos usuários
 - [ ] Exportação de historinhas e flashcards para PDF
-- [ ] Modo offline completo com Service Worker
-- [ ] Estatísticas por matéria e por período
+- [ ] Histórico de notas das redações com gráfico de evolução
+- [ ] Diagnóstico de lacunas de conhecimento (tópicos com mais erros)
 
 ---
 
