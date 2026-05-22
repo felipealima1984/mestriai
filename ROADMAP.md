@@ -16,11 +16,11 @@
 |---|-----------|------:|--------|-------|
 | 1 | ~~Fix bug `progId is not defined` ao duplicar aba de Matérias~~ | ~~1h~~ | **feito** | `sincronizarPaineisModo()` referenciava `progId` como variável livre — substituído por `programaAtivoId` |
 | 2 | ~~Unificar os dois rows de botões de programa no painel Matérias~~ | ~~1h~~ | **feito** | `prog-toggle` da topbar ocultado no painel Matérias; `switchMatTab` sincroniza `programaAtivoId` via `setModo()` |
-| 3 | Testes automatizados básicos (`tests.js` no console) | 8h | pendente | Smoke tests para funções críticas; 4.300+ linhas sem teste é risco alto |
+| 3 | ~~Testes automatizados básicos (`tests.js` no console)~~ | ~~8h~~ | **feito** | 80+ asserções em 19 seções; SM-2, gamificação, freemium, persistência, contexto IA, BUG FIXes 1+2; snapshot/restore de estado global |
 | 4 | ~~Otimizar `max_tokens` por tipo de chamada à API~~ | ~~2h~~ | **feito** | `callClaude()` agora aceita `maxTokens` por feature |
 | 5 | ~~Atualizar README.md~~ | ~~1h~~ | **feito** | README reflete v1.4: SM-2, gamificação, freemium, múltiplos programas |
 
-**Subtotal Fase 1: 8h restantes ≈ 0,5 dias**
+**Subtotal Fase 1: 0h restantes — Fase 1 concluída ✓**
 
 ---
 
@@ -71,13 +71,13 @@
 
 | Fase | Horas restantes | Dias (15h/dia) |
 |------|----------------:|---------------:|
-| Fase 1 — Fundação | 8h | 0,5 dias |
+| Fase 1 — Fundação | **0h** | **concluída ✓** |
 | Fase 2 — Features diferenciadoras | 21h | 1,4 dias |
 | Fase 3 — Retenção e produto completo | 34h | 2,3 dias |
 | Fase 4 — Monetização | 28h | 1,9 dias |
-| **TOTAL RESTANTE** | **91h** | **~6,1 dias** |
+| **TOTAL RESTANTE** | **83h** | **~5,5 dias** |
 
-*(5h já entregues: token optimization + README + fix progId + unificação botões)*
+*(13h já entregues: token optimization + README + fix progId + unificação botões + testes)*
 
 ---
 
