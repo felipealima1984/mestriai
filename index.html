@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Estuda.AI — CACD & Direito</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<style> 
+<style>
 :root {
   --bg:#0e0f14;--bg2:#15161e;--bg3:#1c1d28;
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
@@ -276,7 +277,60 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
 .logout-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;font-family:var(--font-body);transition:color .12s;flex-shrink:0;}
 .logout-btn:hover{color:var(--red);}
 
-/* SM-2 FLASHCARDS */
+/* PAYWALL / PLANO */
+.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;}
+.paywall-overlay.visible{display:flex;}
+.paywall-card{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:36px;width:440px;max-width:92vw;text-align:center;}
+.paywall-icon{font-size:42px;margin-bottom:12px;}
+.paywall-title{font-family:var(--font-head);font-size:22px;font-weight:800;margin-bottom:6px;}
+.paywall-sub{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+.plan-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.plan-card{background:var(--bg3);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .15s;text-align:center;}
+.plan-card.selected{border-color:var(--cacd);}
+.plan-card.popular{border-color:var(--cacd);background:rgba(200,169,110,0.07);}
+.plan-price{font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--cacd);}
+.plan-period{font-size:11px;color:var(--muted);}
+.plan-label{font-size:12px;font-weight:600;margin-bottom:6px;}
+.plan-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--cacd);color:#0e0f14;font-weight:700;display:inline-block;margin-bottom:6px;}
+.usage-bar-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;}
+.usage-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:6px;}
+.usage-fill{height:100%;border-radius:3px;transition:width .3s;}
+.usage-ok{background:var(--green);}
+.usage-warn{background:var(--cacd);}
+.usage-full{background:var(--red);}
+.premium-badge{font-size:10px;padding:2px 9px;border-radius:10px;background:linear-gradient(135deg,#c8a96e,#d4af37);color:#0e0f14;font-weight:700;}
+
+/* PLANO DE ESTUDOS */
+.cronograma-semana{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.cronograma-semana-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .15s;}
+.cronograma-semana-header:hover{background:var(--bg3);}
+.cronograma-semana-titulo{font-family:var(--font-head);font-size:13px;font-weight:700;}
+.cronograma-semana-body{padding:0 16px 14px;display:none;}
+.cronograma-semana-body.open{display:block;}
+.cronograma-dia{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);}
+.cronograma-dia:last-child{border-bottom:none;}
+.cronograma-dia-label{font-size:11px;font-weight:600;width:28px;color:var(--muted);flex-shrink:0;padding-top:2px;}
+.cronograma-dia-content{flex:1;font-size:13px;line-height:1.5;}
+.cronograma-dia-check{flex-shrink:0;}
+.cronograma-dia-check input{width:16px;height:16px;cursor:pointer;}
+
+/* HISTÓRICO REDAÇÕES */
+.red-hist-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.red-hist-item:hover{border-color:var(--border2);}
+.red-hist-nota{font-family:var(--font-head);font-size:22px;font-weight:800;line-height:1;}
+.red-hist-tema{font-size:13px;font-weight:500;flex:1;}
+.red-hist-data{font-size:11px;color:var(--muted);}
+
+/* GRÁFICOS */
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;}
+.chart-title{font-family:var(--font-head);font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.chart-legend{display:flex;gap:12px;font-size:11px;color:var(--muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
+
+/* COMPARTILHAMENTO */
+.share-link-box{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-top:10px;}
+.share-link-text{flex:1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;}
+
 .fc-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .fc-card-wrap{perspective:1000px;min-height:200px;margin-bottom:18px;cursor:pointer;}
 .fc-card{width:100%;min-height:200px;position:relative;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1);}
@@ -451,6 +505,7 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
     <div class="nav-item" onclick="goTo('simulado',this)"><span class="icon">◈</span>Simulados</div>
     <div class="nav-item" onclick="goTo('redacao',this)"><span class="icon">✎</span>Redação CACD</div>
     <div class="nav-item" onclick="goTo('material',this)"><span class="icon">⊕</span>Material de Estudo</div>
+    <div class="nav-item" onclick="goTo('plano',this)"><span class="icon">📅</span>Plano de Estudos</div>
     <div class="nav-item" onclick="goTo('baralhos',this)"><span class="icon">🃏</span>Baralhos</div>
     <div class="nav-item" onclick="goTo('revisao',this)"><span class="icon">▶</span>Revisão SM-2</div>
   </div>
@@ -467,6 +522,22 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
     </select>
   </div>
   <div class="sidebar-footer">
+    <div id="uso-free-bloco">
+      <div class="usage-bar-wrap" style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;font-weight:500;color:var(--muted)">Gerações este mês</span>
+          <span style="font-size:11px;font-weight:700" id="uso-contador">0 / 20</span>
+        </div>
+        <div class="usage-bar"><div class="usage-fill usage-ok" id="uso-fill" style="width:0%"></div></div>
+      </div>
+      <button class="btn btn-primary-cacd" style="width:100%;font-size:12px;padding:8px;margin-bottom:10px" onclick="abrirPaywall('upgrade')">⚡ Seja Premium — R$19,90/mês</button>
+    </div>
+    <div id="uso-premium-bloco" style="display:none;margin-bottom:10px">
+      <div style="text-align:center;padding:8px;background:rgba(200,169,110,0.1);border:1px solid rgba(200,169,110,0.2);border-radius:8px;margin-bottom:8px">
+        <span class="premium-badge">✦ PREMIUM ATIVO</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Gerações ilimitadas</div>
+      </div>
+    </div>
     <div style="font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px">Aparência</div>
     <div class="theme-switcher">
       <button class="theme-btn active" id="tbtn-dark" onclick="setTheme('dark')"><div class="swatch swatch-dark"></div>Escuro</button>
@@ -791,45 +862,6 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
       </div>
     </div>
 
-    <!-- REDAÇÃO -->
-    <div class="panel" id="panel-redacao">
-      <div class="form-group">
-        <label class="form-label">Área temática</label>
-        <select class="form-select" id="red-area">
-          <option>Política Internacional</option><option>Economia Internacional</option>
-          <option>Direitos Humanos</option><option>Meio Ambiente e Clima</option>
-          <option>Segurança Internacional</option><option>Brasil e América do Sul</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tema específico (opcional)</label>
-        <input class="form-input" id="red-tema" placeholder="Deixe vazio para o Claude sugerir..."/>
-      </div>
-      <button class="btn btn-primary-cacd" onclick="gerarTemaRedacao()" id="btn-red-tema">Gerar tema e instruções</button>
-      <div class="tema-box" id="tema-box" style="display:none;margin-top:18px">
-        <div class="result-tag tag-cacd" style="display:inline-block;margin-bottom:8px">TEMA CACD</div>
-        <div class="tema-titulo" id="tema-titulo"></div>
-        <div class="tema-instrucoes" id="tema-instrucoes"></div>
-      </div>
-      <div id="red-form" style="display:none;margin-top:14px">
-        <div class="form-group">
-          <label class="form-label">Sua redação <span style="font-weight:400;text-transform:none">(mín. 500 palavras para o CACD)</span></label>
-          <textarea class="form-textarea" id="red-texto" style="min-height:260px" placeholder="Escreva aqui..."></textarea>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn btn-primary-cacd" onclick="corrigirRedacao()" id="btn-corrigir">✎ Corrigir redação</button>
-          <span style="font-size:12px;color:var(--muted)" id="word-count">0 palavras</span>
-        </div>
-      </div>
-      <div class="result-box" id="result-redacao">
-        <div class="result-header">
-          <span class="result-tag tag-cacd">CORREÇÃO CACD</span>
-          <button class="btn btn-secondary btn-sm" onclick="copiarTexto('result-red-text')">📋 Copiar</button>
-        </div>
-        <div class="result-text" id="result-red-text"></div>
-      </div>
-    </div>
-
     <!-- MATERIAL DE ESTUDO -->
     <div class="panel" id="panel-material">
 
@@ -954,6 +986,135 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
 
     </div>
 
+
+
+    <!-- PLANO DE ESTUDOS -->
+    <div class="panel" id="panel-plano">
+      <div id="plano-config">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Programa</label>
+            <select class="form-select" id="plano-prog-sel"></select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Data da prova / conclusão</label>
+            <input class="form-input" type="date" id="plano-data"/>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Horas disponíveis por dia (úteis)</label>
+            <select class="form-select" id="plano-horas-util">
+              <option value="1">1 hora</option>
+              <option value="2" selected>2 horas</option>
+              <option value="3">3 horas</option>
+              <option value="4">4 horas</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Horas disponíveis (fins de semana)</label>
+            <select class="form-select" id="plano-horas-fds">
+              <option value="0">Não estudo</option>
+              <option value="2">2 horas</option>
+              <option value="4" selected>4 horas</option>
+              <option value="6">6 horas</option>
+              <option value="8">8 horas</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Foco principal</label>
+          <select class="form-select" id="plano-foco">
+            <option value="equilibrado">Equilibrado entre todas as matérias</option>
+            <option value="fraco">Priorizar matérias mais fracas</option>
+            <option value="peso">Priorizar matérias de maior peso no edital</option>
+          </select>
+        </div>
+        <button class="btn btn-primary-cacd" onclick="gerarPlanoPremium()" id="btn-gerar-plano">📅 Gerar plano de estudos</button>
+      </div>
+
+      <div class="result-box" id="result-plano" style="margin-top:20px">
+        <div class="result-header">
+          <span class="result-tag tag-cacd">PLANO GERADO</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-secondary btn-sm" onclick="copiarTexto('plano-raw-text')">📋 Copiar</button>
+            <button class="btn btn-secondary btn-sm" onclick="salvarPlano()">💾 Salvar</button>
+          </div>
+        </div>
+        <div id="plano-cronograma"></div>
+        <div id="plano-raw-text" style="display:none"></div>
+      </div>
+
+      <div id="planos-salvos-lista" style="margin-top:20px">
+        <div class="section-title">Planos salvos</div>
+        <div id="planos-salvos-items"></div>
+        <div id="planos-salvos-vazio" style="font-size:13px;color:var(--muted)">Nenhum plano salvo ainda.</div>
+      </div>
+    </div>
+
+    <!-- REDAÇÃO com histórico -->
+    <div class="panel" id="panel-redacao">
+      <div class="tabs" style="margin-bottom:18px">
+        <button class="tab active" id="tab-red-nova" onclick="switchRedTab('nova')">✎ Nova redação</button>
+        <button class="tab" id="tab-red-hist" onclick="switchRedTab('historico')">📊 Histórico</button>
+      </div>
+
+      <!-- Nova redação -->
+      <div id="red-nova-panel">
+        <div class="form-group">
+          <label class="form-label">Área temática</label>
+          <select class="form-select" id="red-area">
+            <option>Política Internacional</option><option>Economia Internacional</option>
+            <option>Direitos Humanos</option><option>Meio Ambiente e Clima</option>
+            <option>Segurança Internacional</option><option>Brasil e América do Sul</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tema específico (opcional)</label>
+          <input class="form-input" id="red-tema" placeholder="Deixe vazio para o Claude sugerir..."/>
+        </div>
+        <button class="btn btn-primary-cacd" onclick="gerarTemaRedacao()" id="btn-red-tema">Gerar tema e instruções</button>
+        <div class="tema-box" id="tema-box" style="display:none;margin-top:18px">
+          <div class="result-tag tag-cacd" style="display:inline-block;margin-bottom:8px">TEMA CACD</div>
+          <div class="tema-titulo" id="tema-titulo"></div>
+          <div class="tema-instrucoes" id="tema-instrucoes"></div>
+        </div>
+        <div id="red-form" style="display:none;margin-top:14px">
+          <div class="form-group">
+            <label class="form-label">Sua redação <span style="font-weight:400;text-transform:none">(mín. 500 palavras para o CACD)</span></label>
+            <textarea class="form-textarea" id="red-texto" style="min-height:260px" placeholder="Escreva aqui..."></textarea>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-primary-cacd" onclick="corrigirRedacao()" id="btn-corrigir">✎ Corrigir redação</button>
+            <span style="font-size:12px;color:var(--muted)" id="word-count">0 palavras</span>
+          </div>
+        </div>
+        <div class="result-box" id="result-redacao">
+          <div class="result-header">
+            <span class="result-tag tag-cacd">CORREÇÃO CACD</span>
+            <button class="btn btn-secondary btn-sm" onclick="copiarTexto('result-red-text')">📋 Copiar</button>
+          </div>
+          <div class="result-text" id="result-red-text"></div>
+        </div>
+      </div>
+
+      <!-- Histórico de redações -->
+      <div id="red-hist-panel" style="display:none">
+        <div class="chart-wrap">
+          <div class="chart-title">
+            Evolução das notas
+            <div class="chart-legend">
+              <span><span class="legend-dot" style="background:var(--cacd)"></span>Nota geral</span>
+            </div>
+          </div>
+          <canvas id="chart-redacoes" height="120"></canvas>
+          <div id="chart-redacoes-vazio" style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Nenhuma redação corrigida ainda.</div>
+        </div>
+        <div class="section-title">Redações corrigidas</div>
+        <div id="red-hist-lista"></div>
+        <div id="red-hist-vazio" style="font-size:13px;color:var(--muted);display:none">Nenhuma redação salva.</div>
+      </div>
+    </div>
 
     <!-- BARALHOS -->
     <div class="panel" id="panel-baralhos">
@@ -1204,6 +1365,59 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
   </div>
 </div>
 
+<!-- MODAL PAYWALL -->
+<div class="paywall-overlay" id="paywall-overlay">
+  <div class="paywall-card">
+    <div class="paywall-icon">⚡</div>
+    <div class="paywall-title" id="paywall-title">Limite atingido</div>
+    <div class="paywall-sub" id="paywall-sub">Você usou suas 20 gerações gratuitas deste mês. Faça upgrade para continuar estudando sem limites.</div>
+    <div class="plan-cards">
+      <div class="plan-card popular" id="plan-mensal">
+        <div class="plan-badge">MAIS POPULAR</div>
+        <div class="plan-label">Premium Mensal</div>
+        <div class="plan-price">R$19,90</div>
+        <div class="plan-period">/mês</div>
+      </div>
+      <div class="plan-card" id="plan-anual">
+        <div class="plan-badge" style="background:var(--green)">ECONOMIZE 33%</div>
+        <div class="plan-label">Premium Anual</div>
+        <div class="plan-price">R$159</div>
+        <div class="plan-period">/ano · ~R$13,25/mês</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      ✓ Gerações ilimitadas &nbsp;·&nbsp; ✓ Plano de estudos IA &nbsp;·&nbsp; ✓ Histórico de redações<br>
+      ✓ Compartilhamento de baralhos &nbsp;·&nbsp; ✓ Sem anúncios
+    </div>
+    <button class="btn btn-primary-cacd" style="width:100%;padding:12px;font-size:15px" onclick="ativarPremiumDemo()">Assinar Premium</button>
+    <div style="margin-top:10px">
+      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--font-body)" onclick="fecharPaywall()">Continuar no plano gratuito</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMPARTILHAR BARALHO -->
+<div class="modal-overlay" id="modal-share">
+  <div class="modal">
+    <div class="modal-title">Compartilhar baralho</div>
+    <div class="modal-sub">Qualquer pessoa com o link pode importar este baralho.</div>
+    <div class="share-link-box">
+      <div class="share-link-text" id="share-link-text">Gerando link...</div>
+      <button class="btn btn-secondary btn-sm" onclick="copiarShareLink()">Copiar</button>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+      <div class="form-label" style="display:block;margin-bottom:8px">Ou importar baralho de um link</div>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="import-code-input" placeholder="Cole o código do baralho aqui..." style="font-size:13px"/>
+        <button class="btn btn-primary-cacd btn-sm" onclick="importarBaralho()">Importar</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="fecharModalShare()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL API -->
 <div class="modal-overlay" id="modal-setup">
   <div class="modal">
@@ -1305,6 +1519,26 @@ function getTodasMaterias(progId) {
 }
 function getMateria(id) { return materias.find(m => m.id === id); }
 function uid() { return 'm' + Date.now() + Math.random().toString(36).slice(2,6); }
+
+// Helpers: cor e label por programaId (resolve hardcoded 'cacd'/'dir')
+function getProgCor(progId) {
+  const p = getPrograma(progId);
+  if (!p) return 'var(--cacd)';
+  return TIPO_COR[p.tipo] || 'var(--cacd)';
+}
+function getProgLabel(progId) {
+  const p = getPrograma(progId);
+  return p ? p.nome : progId;
+}
+function getProgTagClass(progId) {
+  const p = getPrograma(progId);
+  if (!p) return 'tag-cacd';
+  return (p.tipo === 'concurso' || p.tipo === 'livre') ? 'tag-cacd' : 'tag-dir';
+}
+function isConcursoId(progId) {
+  const p = getPrograma(progId);
+  return isConcurso(p);
+}
 
 // ============================================================
 // PERÍODOS
@@ -1462,7 +1696,8 @@ function renderPeriodoBanner() {
   const nome = document.getElementById('periodo-banner-nome');
   if (!banner || !nome) return;
   const p = getPeriodoAtivo();
-  if (matTabAtual === 'dir' && p) {
+  const prog = getPrograma(matTabAtual);
+  if (hasUnidades(prog) && p) {
     banner.style.display = 'flex';
     nome.textContent = p.numero + 'º Período' + (p.descricao ? ' — ' + p.descricao : '');
   } else {
@@ -1478,7 +1713,10 @@ function renderPeriodoList() {
     return;
   }
   el.innerHTML = periodos.map(p => {
-    const qtdMat = materias.filter(m => m.frente === 'dir' && m.periodoId === p.id).length;
+    const qtdMat = materias.filter(m => {
+      const prog = getPrograma(m.programaId || m.frente);
+      return hasUnidades(prog) && m.periodoId === p.id;
+    }).length;
     return `<div class="periodo-item${p.id === periodoAtivo ? ' ativo' : ''}" onclick="ativarPeriodo('${p.id}')">
       <div class="periodo-num">${p.numero}</div>
       <div class="periodo-info">
@@ -1589,12 +1827,13 @@ window.onload = () => {
   renderXP();
   preencherSelectRevisao();
   sincronizarPaineisModo();
+  initNovosRecursos();
 };
 
 // ============================================================
 // NAVEGAÇÃO
 // ============================================================
-const TITULOS = {dashboard:'Dashboard',programas:'Programas de Estudo',materias:'Matérias',historinha:'Historinhas',simulado:'Simulados',redacao:'Redação',material:'Material de Estudo',baralhos:'Baralhos',revisao:'Revisão SM-2',progresso:'Progresso'};
+const TITULOS = {dashboard:'Dashboard',programas:'Programas de Estudo',materias:'Matérias',historinha:'Historinhas',simulado:'Simulados',redacao:'Redação CACD',plano:'Plano de Estudos',material:'Material de Estudo',baralhos:'Baralhos',revisao:'Revisão SM-2',progresso:'Progresso'};
 
 function goTo(panel, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -1608,12 +1847,13 @@ function goTo(panel, el) {
   document.getElementById('topbar-title').textContent = TITULOS[panel] || panel;
   if (panel === 'materias') { renderMatTabs(); renderCrudLista(); }
   if (panel === 'programas') renderListaProgramas();
-  if (panel === 'progresso') renderProgresso();
+  if (panel === 'progresso') { renderProgresso(); setTimeout(injetarGraficosProgresso, 100); }
   if (panel === 'material') atualizarSelectMatMaterial();
   if (panel === 'dashboard') renderDashboard();
   if (panel === 'baralhos') renderBaralhos();
   if (panel === 'revisao') { preencherSelectRevisao(); renderXP(); }
   if (panel === 'historinha' || panel === 'simulado') sincronizarPaineisModo(modo);
+  if (panel === 'plano') { renderPlanosSalvos(); const sel=document.getElementById('plano-prog-sel'); if(sel) sel.innerHTML=programas.map(p=>`<option value="${p.id}">${p.nome}</option>`).join(''); }
 }
 
 function goToNamed(panel, progId) {
@@ -1682,7 +1922,7 @@ function preencherSelectSimuladoPorModo(id) {
 }
 
 function renderDashboard() {
-  const isCacd = modo === 'cacd';
+  const isCacd = isConcursoId(programaAtivoId);
   document.getElementById('dash-cacd').style.display = isCacd ? 'block' : 'none';
   document.getElementById('dash-dir').style.display  = isCacd ? 'none'  : 'block';
 
@@ -1742,16 +1982,24 @@ function renderDashboard() {
   }
 }
 
-function renderHistoricoFiltrado(frente) {
-  const frenteLabel = frente === 'cacd' ? 'CACD' : 'Direito';
-  const lista = historico.filter(h => h.frente === frenteLabel || h.frente === frente).slice(0, 8);
-  const el    = document.getElementById('dash-hist-' + frente);
-  const vazio = document.getElementById('dash-hist-' + frente + '-vazio');
-  const ic    = { historinha:'✦', simulado:'◈', redacao:'✎', material:'⊕' };
+function renderHistoricoFiltrado(progId) {
+  const prog = getPrograma(progId);
+  const label = prog ? prog.nome : progId;
+  const lista = historico.filter(h =>
+    h.frente === label || h.frente === progId ||
+    h.programaId === progId
+  ).slice(0, 8);
+  const sufixo = isConcursoId(progId) ? 'cacd' : 'dir';
+  const el    = document.getElementById('dash-hist-' + sufixo);
+  const vazio = document.getElementById('dash-hist-' + sufixo + '-vazio');
+  if (!el) return;
+  const ic = { historinha:'✦', simulado:'◈', redacao:'✎', material:'⊕', plano:'📅' };
   if (!lista.length) {
-    el.innerHTML = ''; el.style.display = 'none'; vazio.style.display = 'block'; return;
+    el.innerHTML = ''; el.style.display = 'none';
+    if (vazio) vazio.style.display = 'block'; return;
   }
-  el.style.display = 'flex'; vazio.style.display = 'none';
+  el.style.display = 'flex';
+  if (vazio) vazio.style.display = 'none';
   el.innerHTML = lista.map(h => `
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px">
       <span>${ic[h.tipo]||'·'}</span>
@@ -1831,10 +2079,11 @@ function renderCrudLista() {
   }
   body.innerHTML = lista.map(m => {
     const total = (m.topicos.n1||[]).length + (m.topicos.n2||[]).length + (m.topicos.n3||[]).length;
-    const active = m.id === materiaSelecionadaId ? ' active' + (matTabAtual==='dir'?' dir-item':'') : '';
+    const active = m.id === materiaSelecionadaId ? ' active' : '';
+    const cor = getProgCor(matTabAtual).replace('var(--','').replace(')','');
     return `<div class="crud-item${active}" onclick="selecionarMateria('${m.id}')">
       <span class="crud-item-name">${m.nome}</span>
-      <span class="crud-item-badge" style="background:rgba(${matTabAtual==='cacd'?'200,169,110':'110,155,200'},0.13);color:var(--${matTabAtual==='cacd'?'cacd':'dir'})">${total}</span>
+      <span class="crud-item-badge" style="background:rgba(${cor==='cacd'?'200,169,110':'110,155,200'},0.13);color:var(--${cor==='cacd'?'cacd':'dir'})">${total}</span>
     </div>`;
   }).join('');
 }
@@ -1855,7 +2104,7 @@ function selecionarMateria(id) {
   document.getElementById('crud-detail-empty').style.display = 'none';
   document.getElementById('crud-detail-content').style.display = 'flex';
   document.getElementById('det-nome').textContent = m.nome;
-  document.getElementById('det-frente').textContent = m.frente === 'cacd' ? 'CACD' : 'Direito — ' + semestre(m);
+  document.getElementById('det-frente').textContent = getProgLabel(m.programaId || m.frente);
   renderCrudLista();
   switchUnidade(unidadeAtual);
 }
@@ -2012,12 +2261,12 @@ function getEscopoUnidade(unidade, frente) {
 // ============================================================
 // CLAUDE API
 // ============================================================
-async function callClaude(prompt) {
+async function callClaude(prompt, maxTokens = 800) {
   if (!apiKey) { toast('Configure sua chave de API primeiro'); openSetup(); throw new Error('no key'); }
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
-    body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:1200, messages:[{role:'user',content:prompt}] })
+    body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:maxTokens, messages:[{role:'user',content:prompt}] })
   });
   if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error?.message||`Erro HTTP ${res.status}`); }
   const data = await res.json();
@@ -2079,7 +2328,7 @@ Escreva em português brasileiro. Sem introduções desnecessárias.`;
   btn.innerHTML = '<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span>';
   res.classList.remove('visible');
   try {
-    const resposta = await callClaude(prompt);
+    const resposta = await callClaude(prompt, 800);
     txt.textContent = resposta;
     tag.textContent = tipo==='cacd'?'CACD':'DIREITO';
     tag.className = 'result-tag ' + (tipo==='cacd'?'tag-cacd':'tag-dir');
@@ -2127,7 +2376,7 @@ Formato JSON puro (sem markdown):
   simRespostas = {}; simGabarito = {};
 
   try {
-    const raw = await callClaude(prompt);
+    const raw = await callClaude(prompt, 1500);
     const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
     simQuestoes = data.questoes;
     data.questoes.forEach((q,i) => { simGabarito[i] = q.gabarito; });
@@ -2181,7 +2430,7 @@ function verificarSimulado() {
   stats.acertos += acertos;
   stats.tentativas += simQuestoes.length;
   salvarStats();
-  adicionarHistorico('simulado',simTabAtual==='cacd'?'CACD':'Direito',`${acertos}/${simQuestoes.length} acertos`);
+  adicionarHistorico('simulado', getProgLabel(programaAtivoId), `${acertos}/${simQuestoes.length} acertos`);
   toast(`✓ ${acertos} de ${simQuestoes.length} corretas`);
   document.getElementById('sim-acao').innerHTML = `<button class="btn btn-secondary" onclick="novoSimulado()">Novo simulado</button>`;
 }
@@ -2208,7 +2457,7 @@ Apenas JSON.`;
   btn.disabled = true;
   btn.innerHTML = '<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span>';
   try {
-    const raw = await callClaude(prompt);
+    const raw = await callClaude(prompt, 400);
     const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
     document.getElementById('tema-titulo').textContent = data.titulo;
     document.getElementById('tema-instrucoes').textContent = `${data.instrucoes}\n\nExtensão: ${data.extensao}\n${data.criterios}`;
@@ -2235,7 +2484,7 @@ Forneça: nota geral, 3 pontos positivos, 3 pontos a melhorar, sugestão de rees
   btn.innerHTML='<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span>';
   res.classList.remove('visible');
   try {
-    const resposta = await callClaude(prompt);
+    const resposta = await callClaude(prompt, 1000);
     txt.textContent = resposta;
     res.classList.add('visible');
     stats.redacoes++;
@@ -2470,7 +2719,7 @@ async function gerarDoMaterial() {
 
   const mat = getMateria(matId);
   const matNome = mat ? mat.nome : 'sem matéria';
-  const frenteLabel = frente === 'cacd' ? 'CACD' : 'Direito';
+  const frenteLabel = getProgLabel(frente);
 
   let prompt = '';
   if (genOptSelecionada === 'historinha') {
@@ -2523,17 +2772,18 @@ Apenas JSON, sem markdown.`;
   btn.innerHTML = '<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span>';
   res.classList.remove('visible');
 
+  const matTokens = {historinha: 800, flashcards: 1000, questoes: 1500};
   try {
-    const raw = await callClaude(prompt);
+    const raw = await callClaude(prompt, matTokens[genOptSelecionada] || 1000);
 
     if (genOptSelecionada === 'historinha') {
       body.textContent = raw;
-      tag.textContent = frenteLabel + ' — HISTORINHA';
-      tag.className = 'result-tag ' + (frente==='cacd'?'tag-cacd':'tag-dir');
+      tag.textContent = getProgLabel(frente) + ' — HISTORINHA';
+      tag.className = 'result-tag ' + getProgTagClass(frente);
     } else if (genOptSelecionada === 'flashcards') {
       const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
-      tag.textContent = frenteLabel + ' — FLASHCARDS';
-      tag.className = 'result-tag ' + (frente==='cacd'?'tag-cacd':'tag-dir');
+      tag.textContent = getProgLabel(frente) + ' — FLASHCARDS';
+      tag.className = 'result-tag ' + getProgTagClass(frente);
       body.innerHTML = `<div class="flashcard-deck">${data.flashcards.map((fc,i)=>`
         <div class="flashcard" id="fc-${i}" onclick="toggleFlashcard(${i})">
           <div class="flashcard-front">
@@ -2547,8 +2797,8 @@ Apenas JSON, sem markdown.`;
         </div>`).join('')}</div>`;
     } else {
       const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
-      tag.textContent = frenteLabel + ' — QUESTÕES';
-      tag.className = 'result-tag ' + (frente==='cacd'?'tag-cacd':'tag-dir');
+      tag.textContent = getProgLabel(frente) + ' — QUESTÕES';
+      tag.className = 'result-tag ' + getProgTagClass(frente);
       body.innerHTML = data.questoes.map((q,i)=>`
         <div class="question-card" style="margin-bottom:14px">
           <div class="q-num">Questão ${i+1}</div>
@@ -2631,8 +2881,8 @@ function visualizarMaterialSalvo(i) {
   const body = document.getElementById('mat-result-body');
   const tag = document.getElementById('mat-result-tag');
   const tipoLabel = {historinha:'Historinha', flashcards:'Flashcards', questoes:'Questões'};
-  tag.textContent = (m.frente==='cacd'?'CACD':'Direito') + ' — ' + (tipoLabel[m.tipo]||'').toUpperCase();
-  tag.className = 'result-tag ' + (m.frente==='cacd'?'tag-cacd':'tag-dir');
+  tag.textContent = getProgLabel(m.frente||m.programaId) + ' — ' + (tipoLabel[m.tipo]||'').toUpperCase();
+  tag.className = 'result-tag ' + getProgTagClass(m.frente||m.programaId);
   if (m.tipo === 'historinha') {
     body.textContent = m.conteudoRaw;
   } else {
@@ -3108,15 +3358,17 @@ function renderPrioridade() {
     if (!total) return null;
     const domin = b.cards.filter(c=>c.estado==='dominado').length;
     const pct = Math.round(domin / total * 100);
-    return { nome: b.nome, pct, frente: b.frente };
+    return { nome: b.nome, pct, progId: b.frente };
   }).filter(Boolean).sort((a,b) => a.pct - b.pct);
-  el.innerHTML = por_baralho.map(b => `
-    <div class="prior-item">
-      <div class="prior-badge" style="background:${b.frente==='cacd'?'var(--cacd)':'var(--dir)'}"></div>
+  el.innerHTML = por_baralho.map(b => {
+    const cor = getProgCor(b.progId);
+    return `<div class="prior-item">
+      <div class="prior-badge" style="background:${cor}"></div>
       <div class="prior-name">${b.nome}</div>
-      <div style="flex:2;margin:0 10px"><div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${b.pct}%;background:${b.frente==='cacd'?'var(--cacd)':'var(--dir)'};border-radius:2px"></div></div></div>
+      <div style="flex:2;margin:0 10px"><div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${b.pct}%;background:${cor};border-radius:2px"></div></div></div>
       <div class="prior-pct">${b.pct}%</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderConsistencia() {
@@ -3500,9 +3752,563 @@ salvarApiKey = function() {
 })();
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    document.querySelectorAll('.modal-overlay.visible').forEach(m=>m.classList.remove('visible'));
+    document.querySelectorAll('.modal-overlay.visible,.paywall-overlay.visible').forEach(m=>m.classList.remove('visible'));
   }
 });
+
+// ============================================================
+// PLANO PREMIUM / PAYWALL
+// ============================================================
+let plano = JSON.parse(localStorage.getItem('estuda_plano') || '{"tipo":"free","geracoes":0,"mesReferencia":""}');
+
+const LIMITE_FREE = 20;
+
+function getMesAtual() { return new Date().toISOString().slice(0,7); }
+
+function verificarResetMensal() {
+  const mes = getMesAtual();
+  if (plano.mesReferencia !== mes) {
+    plano.geracoes = 0;
+    plano.mesReferencia = mes;
+    salvarPlanoLocal();
+  }
+}
+
+function salvarPlanoLocal() { localStorage.setItem('estuda_plano', JSON.stringify(plano)); }
+
+function isPremium() { return plano.tipo === 'premium'; }
+
+function contarGeracao() {
+  verificarResetMensal();
+  if (isPremium()) return true;
+  if (plano.geracoes >= LIMITE_FREE) { abrirPaywall('limite'); return false; }
+  plano.geracoes++;
+  salvarPlanoLocal();
+  renderUsageBar();
+  return true;
+}
+
+function renderUsageBar() {
+  verificarResetMensal();
+  const prem = isPremium();
+  document.getElementById('uso-free-bloco').style.display = prem ? 'none' : 'block';
+  document.getElementById('uso-premium-bloco').style.display = prem ? 'block' : 'none';
+  if (!prem) {
+    const usado = plano.geracoes;
+    const pct = Math.min(100, Math.round(usado / LIMITE_FREE * 100));
+    document.getElementById('uso-contador').textContent = `${usado} / ${LIMITE_FREE}`;
+    const fill = document.getElementById('uso-fill');
+    fill.style.width = pct + '%';
+    fill.className = 'usage-fill ' + (pct >= 100 ? 'usage-full' : pct >= 75 ? 'usage-warn' : 'usage-ok');
+  }
+}
+
+function abrirPaywall(motivo) {
+  const titulo = motivo === 'limite' ? 'Limite mensal atingido' : 'Desbloqueie o Premium';
+  const sub = motivo === 'limite'
+    ? 'Você usou suas 20 gerações gratuitas. Faça upgrade para continuar sem limites.'
+    : 'Acesse recursos exclusivos com o plano Premium.';
+  document.getElementById('paywall-title').textContent = titulo;
+  document.getElementById('paywall-sub').textContent = sub;
+  document.getElementById('paywall-overlay').classList.add('visible');
+}
+
+function fecharPaywall() { document.getElementById('paywall-overlay').classList.remove('visible'); }
+
+function ativarPremiumDemo() {
+  // Em produção: integrar com Stripe/PagSeguro
+  plano.tipo = 'premium';
+  salvarPlanoLocal();
+  fecharPaywall();
+  renderUsageBar();
+  toast('✦ Premium ativado! Obrigado por apoiar o Estuda.AI');
+}
+
+// Interceptar todas as funções de geração para verificar limite
+const _gerarHistorinha = gerarHistorinha;
+gerarHistorinha = async function(tipo) { if (!contarGeracao()) return; return _gerarHistorinha(tipo); };
+
+const _gerarSimulado = gerarSimulado;
+gerarSimulado = async function() { if (!contarGeracao()) return; return _gerarSimulado(); };
+
+const _gerarTemaRedacao = gerarTemaRedacao;
+gerarTemaRedacao = async function() { if (!contarGeracao()) return; return _gerarTemaRedacao(); };
+
+const _corrigirRedacao = corrigirRedacao;
+corrigirRedacao = async function() { if (!contarGeracao()) return; return _corrigirRedacao(); };
+
+const _gerarDoMaterial = gerarDoMaterial;
+gerarDoMaterial = async function() { if (!contarGeracao()) return; return _gerarDoMaterial(); };
+
+// ============================================================
+// PLANO DE ESTUDOS COM IA
+// ============================================================
+let planosSalvos = JSON.parse(localStorage.getItem('estuda_planos_estudo') || '[]');
+
+function salvarPlanosEstudo() { localStorage.setItem('estuda_planos_estudo', JSON.stringify(planosSalvos)); }
+
+async function gerarPlanoPremium() {
+  if (!isPremium()) { abrirPaywall('plano'); return; }
+  const progId = document.getElementById('plano-prog-sel').value;
+  const prog = getPrograma(progId);
+  const dataProva = document.getElementById('plano-data').value;
+  const horasUtil = document.getElementById('plano-horas-util').value;
+  const horasFds = document.getElementById('plano-horas-fds').value;
+  const foco = document.getElementById('plano-foco').value;
+  if (!dataProva) { toast('Informe a data da prova ou conclusão'); return; }
+  const mats = getTodasMaterias(progId);
+  if (!mats.length) { toast('Cadastre matérias no programa antes de gerar o plano'); return; }
+  const hoje = new Date();
+  const prova = new Date(dataProva);
+  const diasRestantes = Math.max(1, Math.round((prova - hoje) / 86400000));
+  const semanasRestantes = Math.ceil(diasRestantes / 7);
+  const btn = document.getElementById('btn-gerar-plano');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span>';
+
+  const prompt = `Você é um especialista em planejamento de estudos para ${prog?.tipo === 'concurso' ? 'concursos públicos' : 'graduação'} no Brasil.
+
+Crie um plano de estudos detalhado com as seguintes informações:
+- Programa: ${prog?.nome || progId}
+- Matérias: ${mats.map(m=>m.nome).join(', ')}
+- Dias restantes: ${diasRestantes} dias (${semanasRestantes} semanas)
+- Horas por dia (úteis): ${horasUtil}h
+- Horas por dia (fins de semana): ${horasFds}h
+- Foco: ${foco}
+
+Gere um plano semana a semana no formato JSON puro:
+{
+  "resumo": "texto de 2 linhas resumindo a estratégia",
+  "semanas": [
+    {
+      "semana": 1,
+      "periodo": "DD/MM a DD/MM",
+      "foco": "nome da matéria principal",
+      "dias": [
+        {"dia": "Seg", "atividade": "descrição do que estudar", "horas": 2},
+        {"dia": "Ter", "atividade": "...", "horas": 2},
+        {"dia": "Qua", "atividade": "...", "horas": 2},
+        {"dia": "Qui", "atividade": "...", "horas": 2},
+        {"dia": "Sex", "atividade": "...", "horas": 2},
+        {"dia": "Sáb", "atividade": "...", "horas": 4},
+        {"dia": "Dom", "atividade": "...", "horas": 4}
+      ]
+    }
+  ]
+}
+Máximo de ${Math.min(semanasRestantes, 8)} semanas. Apenas JSON, sem markdown.`;
+
+  try {
+    const raw = await callClaude(prompt, 3000);
+    const data = JSON.parse(raw.replace(/\`\`\`json|\`\`\`/g,'').trim());
+    renderCronograma(data);
+    document.getElementById('plano-raw-text').textContent = JSON.stringify(data, null, 2);
+    document.getElementById('result-plano').classList.add('visible');
+    window._planoAtual = data;
+    adicionarHistorico('plano', prog?.nome||'', `Plano gerado — ${semanasRestantes} semanas`);
+  } catch(e) { if(e.message!=='no key') toast('Erro: '+e.message); }
+  finally { btn.disabled=false; btn.innerHTML='📅 Gerar plano de estudos'; }
+}
+
+function renderCronograma(data) {
+  const el = document.getElementById('plano-cronograma');
+  if (!el) return;
+  el.innerHTML = `<div style="font-size:13px;color:var(--muted);margin-bottom:16px;padding:12px;background:var(--bg3);border-radius:8px">${data.resumo}</div>` +
+    data.semanas.map((s,i) => `
+      <div class="cronograma-semana">
+        <div class="cronograma-semana-header" onclick="toggleSemana(${i})">
+          <div>
+            <div class="cronograma-semana-titulo">Semana ${s.semana} — ${s.periodo}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Foco: ${s.foco}</div>
+          </div>
+          <span style="color:var(--muted);font-size:14px" id="sem-arrow-${i}">▼</span>
+        </div>
+        <div class="cronograma-semana-body ${i===0?'open':''}" id="sem-body-${i}">
+          ${s.dias.map(d => `
+            <div class="cronograma-dia">
+              <div class="cronograma-dia-label">${d.dia}</div>
+              <div class="cronograma-dia-content">${d.atividade} <span style="color:var(--muted);font-size:11px">(${d.horas}h)</span></div>
+              <div class="cronograma-dia-check"><input type="checkbox" title="Concluído"/></div>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+}
+
+function toggleSemana(i) {
+  const body = document.getElementById('sem-body-'+i);
+  const arrow = document.getElementById('sem-arrow-'+i);
+  body.classList.toggle('open');
+  arrow.textContent = body.classList.contains('open') ? '▲' : '▼';
+}
+
+function salvarPlano() {
+  if (!window._planoAtual) return;
+  planosSalvos.unshift({ data: new Date().toISOString(), plano: window._planoAtual });
+  if (planosSalvos.length > 10) planosSalvos.pop();
+  salvarPlanosEstudo();
+  renderPlanosSalvos();
+  toast('✓ Plano salvo');
+}
+
+function renderPlanosSalvos() {
+  const el = document.getElementById('planos-salvos-items');
+  const vazio = document.getElementById('planos-salvos-vazio');
+  if (!el) return;
+  if (!planosSalvos.length) { el.innerHTML=''; vazio.style.display='block'; return; }
+  vazio.style.display='none';
+  el.innerHTML = planosSalvos.map((p,i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:7px">
+      <span>📅</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${p.plano.semanas?.length||0} semanas</div>
+        <div style="font-size:11px;color:var(--muted)">${new Date(p.data).toLocaleDateString('pt-BR')}</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="verPlanoSalvo(${i})">Ver</button>
+      <button class="btn btn-danger btn-sm" onclick="excluirPlano(${i})">×</button>
+    </div>`).join('');
+}
+
+function verPlanoSalvo(i) {
+  window._planoAtual = planosSalvos[i].plano;
+  renderCronograma(planosSalvos[i].plano);
+  document.getElementById('result-plano').classList.add('visible');
+  document.getElementById('result-plano').scrollIntoView({behavior:'smooth'});
+}
+
+function excluirPlano(i) {
+  planosSalvos.splice(i,1);
+  salvarPlanosEstudo();
+  renderPlanosSalvos();
+}
+
+// ============================================================
+// HISTÓRICO DE REDAÇÕES + GRÁFICO
+// ============================================================
+let redacoesHist = JSON.parse(localStorage.getItem('estuda_redacoes_hist') || '[]');
+
+function salvarRedacoesHist() { localStorage.setItem('estuda_redacoes_hist', JSON.stringify(redacoesHist)); }
+
+function switchRedTab(t) {
+  ['nova','historico'].forEach(x => {
+    document.getElementById('tab-red-'+x).classList.toggle('active', x===t);
+    document.getElementById('red-'+x+'-panel').style.display = x===t ? 'block' : 'none';
+  });
+  if (t === 'historico') renderHistoricoRedacoes();
+}
+
+function extrairNotaRedacao(texto) {
+  // Extrai nota geral do texto de correção (busca padrão "X/10" ou "Nota: X")
+  const match = texto.match(/nota\s*geral[:\s]*(\d+(?:[.,]\d+)?)/i) ||
+                texto.match(/(\d+(?:[.,]\d+)?)\s*\/\s*10/);
+  if (match) return parseFloat(match[1].replace(',','.'));
+  return null;
+}
+
+// Sobrescrever corrigirRedacao para salvar no histórico
+const _origCorrigirRedacao2 = corrigirRedacao;
+corrigirRedacao = async function() {
+  await _origCorrigirRedacao2();
+  // Salvar após correção
+  const txt = document.getElementById('result-red-text')?.textContent;
+  const tema = document.getElementById('tema-titulo')?.textContent;
+  if (txt && txt.length > 50) {
+    const nota = extrairNotaRedacao(txt);
+    redacoesHist.unshift({
+      tema: tema || 'Sem tema',
+      nota: nota,
+      texto: document.getElementById('red-texto')?.value || '',
+      correcao: txt,
+      data: new Date().toISOString()
+    });
+    if (redacoesHist.length > 50) redacoesHist.pop();
+    salvarRedacoesHist();
+  }
+};
+
+function renderHistoricoRedacoes() {
+  const lista = document.getElementById('red-hist-lista');
+  const vazio = document.getElementById('red-hist-vazio');
+  if (!lista) return;
+  if (!redacoesHist.length) { lista.innerHTML=''; vazio.style.display='block'; renderGraficoRedacoes([]); return; }
+  vazio.style.display='none';
+  lista.innerHTML = redacoesHist.map((r,i) => {
+    const cor = !r.nota ? 'var(--muted)' : r.nota >= 7 ? 'var(--green)' : r.nota >= 5 ? 'var(--cacd)' : 'var(--red)';
+    return `<div class="red-hist-item" onclick="verRedacaoHistorico(${i})">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="red-hist-nota" style="color:${cor}">${r.nota ? r.nota.toFixed(1) : '—'}</div>
+        <div style="flex:1">
+          <div class="red-hist-tema">${r.tema}</div>
+          <div class="red-hist-data">${new Date(r.data).toLocaleDateString('pt-BR')}</div>
+        </div>
+        <span style="color:var(--muted);font-size:12px">▶</span>
+      </div>
+    </div>`;
+  }).join('');
+  renderGraficoRedacoes(redacoesHist);
+}
+
+let chartRedacoesInst = null;
+function renderGraficoRedacoes(dados) {
+  const canvas = document.getElementById('chart-redacoes');
+  const vazio = document.getElementById('chart-redacoes-vazio');
+  if (!canvas) return;
+  const comNota = dados.filter(r => r.nota !== null && r.nota !== undefined).slice(0,10).reverse();
+  if (!comNota.length) { canvas.style.display='none'; vazio.style.display='block'; return; }
+  canvas.style.display='block'; vazio.style.display='none';
+  if (chartRedacoesInst) chartRedacoesInst.destroy();
+  const isDark = !document.body.classList.contains('theme-light') && !document.body.classList.contains('theme-gray');
+  const textColor = isDark ? '#7a7870' : '#888680';
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+  chartRedacoesInst = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: comNota.map(r => new Date(r.data).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})),
+      datasets: [{
+        label: 'Nota geral',
+        data: comNota.map(r => r.nota),
+        borderColor: '#c8a96e',
+        backgroundColor: 'rgba(200,169,110,0.1)',
+        borderWidth: 2,
+        pointBackgroundColor: '#c8a96e',
+        pointRadius: 4,
+        tension: 0.3,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min:0, max:10, ticks:{ color:textColor, stepSize:2 }, grid:{ color:gridColor } },
+        x: { ticks:{ color:textColor }, grid:{ color:gridColor } }
+      }
+    }
+  });
+}
+
+function verRedacaoHistorico(i) {
+  const r = redacoesHist[i];
+  document.getElementById('result-red-text').textContent = r.correcao;
+  document.getElementById('result-redacao').classList.add('visible');
+  switchRedTab('nova');
+  document.getElementById('result-redacao').scrollIntoView({behavior:'smooth'});
+}
+
+// ============================================================
+// GRÁFICO DE PROGRESSO GERAL (XP ao longo do tempo)
+// ============================================================
+let progressoHist = JSON.parse(localStorage.getItem('estuda_progresso_hist') || '[]');
+
+function registrarProgressoHist() {
+  const hoje = new Date().toDateString();
+  const ultimo = progressoHist[progressoHist.length-1];
+  if (ultimo && ultimo.data === hoje) {
+    ultimo.xp = gamification.xp;
+    ultimo.dominado = baralhos.flatMap(b=>b.cards).filter(c=>c.estado==='dominado').length;
+  } else {
+    progressoHist.push({
+      data: hoje,
+      xp: gamification.xp,
+      dominado: baralhos.flatMap(b=>b.cards).filter(c=>c.estado==='dominado').length,
+    });
+    if (progressoHist.length > 60) progressoHist.shift();
+  }
+  localStorage.setItem('estuda_progresso_hist', JSON.stringify(progressoHist));
+}
+
+let chartXPInst = null;
+let chartDomInst = null;
+
+function renderGraficosProgresso() {
+  const dados30 = progressoHist.slice(-30);
+  if (!dados30.length) return;
+  const isDark = !document.body.classList.contains('theme-light') && !document.body.classList.contains('theme-gray');
+  const textColor = isDark ? '#7a7870' : '#888680';
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+  const labels = dados30.map(d => {
+    const dt = new Date(d.data);
+    return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  });
+
+  // Gráfico XP
+  const cXP = document.getElementById('chart-xp');
+  if (cXP) {
+    if (chartXPInst) chartXPInst.destroy();
+    chartXPInst = new Chart(cXP, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'XP acumulado',
+          data: dados30.map(d=>d.xp),
+          borderColor:'#c8a96e', backgroundColor:'rgba(200,169,110,0.1)',
+          borderWidth:2, pointRadius:3, tension:0.3, fill:true,
+        }]
+      },
+      options: {
+        responsive:true, plugins:{ legend:{display:false} },
+        scales:{ y:{ticks:{color:textColor},grid:{color:gridColor}}, x:{ticks:{color:textColor},grid:{color:gridColor}} }
+      }
+    });
+  }
+
+  // Gráfico cards dominados
+  const cDom = document.getElementById('chart-dominados');
+  if (cDom) {
+    if (chartDomInst) chartDomInst.destroy();
+    chartDomInst = new Chart(cDom, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Cards dominados',
+          data: dados30.map(d=>d.dominado),
+          backgroundColor:'rgba(110,200,155,0.5)', borderColor:'#6ec89b', borderWidth:1, borderRadius:4,
+        }]
+      },
+      options: {
+        responsive:true, plugins:{legend:{display:false}},
+        scales:{ y:{ticks:{color:textColor},grid:{color:gridColor}}, x:{ticks:{color:textColor},grid:{color:gridColor}} }
+      }
+    });
+  }
+}
+
+// ============================================================
+// COMPARTILHAMENTO DE BARALHOS
+// ============================================================
+let deckParaCompartilhar = null;
+
+function compartilharBaralho(deckId) {
+  deckParaCompartilhar = getBaralho(deckId);
+  if (!deckParaCompartilhar) return;
+  // Gerar código base64 do baralho (sem dados de progresso)
+  const exportData = {
+    nome: deckParaCompartilhar.nome,
+    frente: deckParaCompartilhar.frente,
+    matNome: deckParaCompartilhar.matNome,
+    cards: deckParaCompartilhar.cards.map(c => ({ pergunta: c.pergunta, resposta: c.resposta })),
+    versao: '1.0'
+  };
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(exportData))));
+  const link = `${window.location.origin}${window.location.pathname}?importar=${code}`;
+  document.getElementById('share-link-text').textContent = link;
+  document.getElementById('modal-share').classList.add('visible');
+}
+
+function fecharModalShare() { document.getElementById('modal-share').classList.remove('visible'); }
+
+function copiarShareLink() {
+  const txt = document.getElementById('share-link-text').textContent;
+  navigator.clipboard.writeText(txt);
+  toast('✓ Link copiado');
+}
+
+function importarBaralho() {
+  const input = document.getElementById('import-code-input').value.trim();
+  if (!input) { toast('Cole o código ou link do baralho'); return; }
+  try {
+    // Extrair código do link ou usar direto
+    const code = input.includes('importar=') ? input.split('importar=')[1] : input;
+    const data = JSON.parse(decodeURIComponent(escape(atob(code))));
+    const b = criarBaralho(data.nome + ' (importado)', data.frente, null, data.matNome, data.cards);
+    preencherSelectRevisao();
+    fecharModalShare();
+    goTo('baralhos', null);
+    toast(`✓ Baralho "${b.nome}" importado com ${b.cards.length} cards`);
+  } catch(e) { toast('Código inválido'); }
+}
+
+// Verificar import na URL ao carregar
+function verificarImportURL() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('importar');
+  if (!code) return;
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(code))));
+    if (confirm(`Importar o baralho "${data.nome}" com ${data.cards.length} cards?`)) {
+      const b = criarBaralho(data.nome + ' (importado)', data.frente, null, data.matNome, data.cards);
+      preencherSelectRevisao();
+      toast(`✓ "${b.nome}" importado com sucesso`);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  } catch(e) {}
+}
+
+// ============================================================
+// ATUALIZAR renderBaralhos PARA INCLUIR BOTÃO COMPARTILHAR
+// ============================================================
+const _origRenderBaralhos = renderBaralhos;
+renderBaralhos = function() {
+  _origRenderBaralhos();
+  // Adicionar botão compartilhar a cada deck card
+  document.querySelectorAll('.deck-card').forEach((card, i) => {
+    if (baralhos[i]) {
+      const btns = card.querySelector('div[style*="display:flex;gap:8px"]');
+      if (btns && !btns.querySelector('.share-btn')) {
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'btn btn-secondary btn-sm share-btn';
+        shareBtn.textContent = '🔗 Compartilhar';
+        shareBtn.onclick = (e) => { e.stopPropagation(); compartilharBaralho(baralhos[i].id); };
+        btns.insertBefore(shareBtn, btns.lastChild);
+      }
+    }
+  });
+};
+
+// ============================================================
+// ATUALIZAR renderProgresso PARA INCLUIR GRÁFICOS
+// ============================================================
+const _origRenderProgresso = renderProgresso;
+renderProgresso = function() {
+  _origRenderProgresso();
+  registrarProgressoHist();
+  setTimeout(renderGraficosProgresso, 100);
+};
+
+// ============================================================
+// ADICIONAR GRÁFICOS AO PAINEL DE PROGRESSO VIA JS
+// ============================================================
+function injetarGraficosProgresso() {
+  const panel = document.getElementById('panel-progresso');
+  if (!panel || document.getElementById('chart-xp')) return;
+  const graficos = document.createElement('div');
+  graficos.innerHTML = `
+    <div class="section-title" style="margin-top:24px">Evolução do XP — últimos 30 dias</div>
+    <div class="chart-wrap"><canvas id="chart-xp" height="110"></canvas></div>
+    <div class="section-title">Cards dominados ao longo do tempo</div>
+    <div class="chart-wrap"><canvas id="chart-dominados" height="110"></canvas></div>`;
+  // Inserir antes da seção de consistência
+  const consist = panel.querySelector('.section-title');
+  if (consist) panel.insertBefore(graficos, consist);
+}
+
+// ============================================================
+// INICIALIZAÇÃO DOS NOVOS RECURSOS
+// ============================================================
+function initNovosRecursos() {
+  verificarResetMensal();
+  renderUsageBar();
+  verificarImportURL();
+  injetarGraficosProgresso();
+  renderPlanosSalvos();
+  // Preencher select de programa no plano
+  const sel = document.getElementById('plano-prog-sel');
+  if (sel) sel.innerHTML = programas.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  // Data padrão: hoje + 1 ano
+  const dataInput = document.getElementById('plano-data');
+  if (dataInput && !dataInput.value) {
+    const d = new Date(); d.setFullYear(d.getFullYear()+1);
+    dataInput.value = d.toISOString().slice(0,10);
+  }
+  // Carregar Chart.js se necessário
+  if (!window.Chart) {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+    document.head.appendChild(s);
+  }
+}
+
 </script>
 </body>
 </html>
