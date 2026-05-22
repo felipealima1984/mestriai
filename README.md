@@ -11,6 +11,9 @@ Hospedada em **GitHub Pages** — sem backend próprio.
 ### Múltiplos programas de estudo
 Crie quantos programas quiser (CACD, Direito, qualquer concurso). Cada programa tem suas matérias, tópicos e configurações independentes. Um seletor rápido na sidebar alterna entre eles.
 
+### Compartilhamento de programas
+Exporte qualquer programa de estudos (incluindo todas as matérias e tópicos) como arquivo `.json` ou como código copiável. Importe programas recebidos de outros usuários com um clique — sem conflito de IDs, sem sobrescrever dados existentes. Botão **Exportar** em cada programa e **Importar** no cabeçalho da seção de Programas.
+
 ### Historinhas
 Gera narrativas curtas para memorização. O modelo recebe a matéria, a unidade (N1/N2/N3) e os tópicos cadastrados como contexto, produzindo uma história com personagens que cristaliza os conceitos em bullet points no final.
 
@@ -118,7 +121,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (80+ asserções, 19 seções):**
+**Cobertura (95+ asserções, 20 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -140,6 +143,8 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | BUG FIX 2 | prog-toggle oculto no painel Matérias |
 | switchMatTab | Sincronização de programaAtivoId, painel de períodos |
 | Renderizações | renderDashboard, renderCrudLista, renderMatTabs, renderBaralhos, renderXP, renderUsageBar |
+| Diagnóstico de lacunas | salvarLacunas, renderDiagnostico, ordenação, rastreamento pós-simulado |
+| Compartilhamento de programas | _montarExportPrograma (campos, isolamento de ids), round-trip export→import, validação de formato inválido |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 
@@ -229,6 +234,15 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Histórico de versões
 
+### v1.6.0 — Compartilhamento de programas de estudo
+- Novo botão **Exportar** em cada programa na seção Programas de Estudo
+- Novo botão **Importar** no cabeçalho da seção, abre modal com upload de arquivo `.json` ou código colado
+- Função `exportarPrograma(id)` serializa o programa + todas as matérias e tópicos em JSON; produz código base64 copiável e botão de download como arquivo `.json`
+- Função `_executarImportPrograma(data)` recria o programa com IDs novos (sem conflito com dados existentes), vincula todas as matérias e sincroniza com Supabase
+- Formato de exportação documentado: `{ versao, tipo:"programa", exportadoEm, programa:{nome,tipo,instituicao,ano}, materias:[{nome,topicos:{n1,n2,n3}}] }`
+- IDs são sempre regenerados na importação — dados de progresso (lacunas, SM-2) não viajam no export
+- `tests.js` atualizado: nova seção 20 com 15 asserções cobrindo export, round-trip, isolamento de IDs, importação de matérias e validação de formatos inválidos
+
 ### v1.5.0 — Diagnóstico de lacunas de conhecimento
 - Novo sistema de rastreamento: `verificarSimulado()` registra acertos e erros por matéria no objeto `lacunas` (persiste em `localStorage.estuda_lacunas`)
 - Nova função `renderDiagnostico(containerId, progId)` exibe ranking das matérias com maior taxa de erro, com barra visual colorida (verde → amarelo → vermelho) e botões de ação direta
@@ -292,7 +306,7 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Roadmap
 
-Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por atividade (~93h restantes).
+Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por atividade (~69h restantes).
 
 **Estratégia:** construir valor primeiro, monetizar por último.  
 **Regra de trabalho:** cada item inicia em branch dedicada → atualiza README → merge na main → push.
@@ -306,7 +320,7 @@ Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por 
 
 ### Fase 2 — Features diferenciadoras
 - [x] Diagnóstico de lacunas de conhecimento (tópicos com mais erros no simulado)
-- [ ] Compartilhamento de programas de estudo (export/import JSON)
+- [x] Compartilhamento de programas de estudo (export/import JSON)
 - [ ] Estimativa de prontidão para a prova
 - [ ] Suporte a LaTeX/MathJax nas respostas
 
