@@ -76,6 +76,9 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
 .swatch-dark{background:#0e0f14;}.swatch-gray{background:#e8e7e3;}.swatch-light{background:#ffffff;}
 .setup-btn{width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;cursor:pointer;transition:all .15s;}
 .setup-btn:hover{border-color:var(--cacd);color:var(--cacd);}
+.notif-btn{width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-family:var(--font-body);font-size:12px;cursor:pointer;transition:all .15s;margin-top:6px;text-align:left;}
+.notif-btn:hover{border-color:var(--cacd);color:var(--text);}
+.notif-btn.notif-ativo{color:var(--cacd);border-color:rgba(200,169,110,.4);}
 
 /* TOPBAR */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;}
@@ -607,6 +610,7 @@ mjx-container svg { color: var(--text); }
       <button class="theme-btn" id="tbtn-light" onclick="setTheme('light')"><div class="swatch swatch-light"></div>Claro</button>
     </div>
     <button class="setup-btn" onclick="openSetup()">⚙ Configurar API</button>
+    <button class="notif-btn" id="btn-notif" onclick="toggleNotificacoes()">🔕 Notificações: OFF</button>
   </div>
 </aside>
 
@@ -4830,6 +4834,88 @@ function _executarImportPrograma(data) {
 }
 
 // ============================================================
+// NOTIFICAÇÕES SM-2
+// ============================================================
+
+function contarCardsDue() {
+  const agora = Date.now();
+  let total = 0;
+  baralhos.forEach(b => (b.cards || []).forEach(c => { if ((c.nextReview || 0) <= agora) total++; }));
+  return total;
+}
+
+function atualizarBotaoNotif() {
+  const btn = document.getElementById('btn-notif');
+  if (!btn) return;
+  const ativo = localStorage.getItem('estuda_notif_enabled') === '1'
+    && 'Notification' in window
+    && Notification.permission === 'granted';
+  btn.textContent = ativo ? '🔔 Notificações: ON' : '🔕 Notificações: OFF';
+  btn.classList.toggle('notif-ativo', ativo);
+}
+
+async function ativarNotificacoes() {
+  if (!('Notification' in window)) { toast('Seu navegador não suporta notificações'); return; }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    localStorage.setItem('estuda_notif_enabled', '1');
+    toast('Notificações ativadas!');
+    atualizarBotaoNotif();
+    verificarNotificacoes(true);
+  } else {
+    localStorage.removeItem('estuda_notif_enabled');
+    toast('Permissão negada — ative nas configurações do navegador');
+    atualizarBotaoNotif();
+  }
+}
+
+function desativarNotificacoes() {
+  localStorage.removeItem('estuda_notif_enabled');
+  localStorage.removeItem('estuda_notif_last_date');
+  toast('Notificações desativadas');
+  atualizarBotaoNotif();
+}
+
+async function toggleNotificacoes() {
+  if (localStorage.getItem('estuda_notif_enabled') === '1') {
+    desativarNotificacoes();
+  } else {
+    await ativarNotificacoes();
+  }
+}
+
+function mostrarNotificacaoRevisao(count) {
+  const title = 'Estuda.AI — Hora de revisar!';
+  const body  = `Você tem ${count} flashcard${count !== 1 ? 's' : ''} para revisar hoje.`;
+  const icon  = './icons/icon-192.svg';
+  const tag   = 'revisao-sm2';
+  const data  = { url: './#revisao' };
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'SHOW_NOTIFICATION', title, body, icon, badge: icon, tag, data });
+  } else {
+    try { new Notification(title, { body, icon, tag }); } catch (_) {}
+  }
+}
+
+function verificarNotificacoes(forcar) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  if (localStorage.getItem('estuda_notif_enabled') !== '1') return;
+  const hoje = new Date().toDateString();
+  if (!forcar && localStorage.getItem('estuda_notif_last_date') === hoje) return;
+  const due = contarCardsDue();
+  if (due > 0) {
+    mostrarNotificacaoRevisao(due);
+    localStorage.setItem('estuda_notif_last_date', hoje);
+  }
+}
+
+function iniciarVerificacaoHoraria() {
+  // Verificar a cada hora se há cards devidos (para app que fica aberto o dia todo)
+  setInterval(() => verificarNotificacoes(false), 60 * 60 * 1000);
+}
+
+// ============================================================
 // INICIALIZAÇÃO DOS NOVOS RECURSOS
 // ============================================================
 function initNovosRecursos() {
@@ -4854,6 +4940,10 @@ function initNovosRecursos() {
     s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
     document.head.appendChild(s);
   }
+  // Notificações SM-2
+  atualizarBotaoNotif();
+  verificarNotificacoes(false);
+  iniciarVerificacaoHoraria();
 }
 
 </script>

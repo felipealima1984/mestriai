@@ -22,6 +22,7 @@
  *  - LaTeX/MathJax: renderizarLatex (null-safe, sem MathJax), initLatexObserver, config inlineMath/displayMath, override verificarSimulado
  *  - PWA: link manifest, meta theme-color/apple/mobile, apple-touch-icon, banner de atualização, navigator.serviceWorker
  *  - Logo imagem: elementos #logo-sidebar e #logo-auth (img tags), atualizarLogoTema, troca de src por tema
+ *  - Notificações SM-2: contarCardsDue, atualizarBotaoNotif, ativar/desativar/toggle, verificarNotificacoes, #btn-notif
  */
 (() => {
   'use strict';
@@ -863,6 +864,71 @@
 
   // Restaurar tema original
   setTheme(localStorage.getItem('estuda_theme') || 'dark');
+
+  endSection();
+
+  // ─── SEÇÃO 25 — Notificações SM-2 ───────────────────────────────────────────
+
+  startSection('25 — Notificações SM-2');
+
+  ok('contarCardsDue é uma função', typeof contarCardsDue === 'function');
+  ok('atualizarBotaoNotif é uma função', typeof atualizarBotaoNotif === 'function');
+  ok('ativarNotificacoes é uma função', typeof ativarNotificacoes === 'function');
+  ok('desativarNotificacoes é uma função', typeof desativarNotificacoes === 'function');
+  ok('toggleNotificacoes é uma função', typeof toggleNotificacoes === 'function');
+  ok('verificarNotificacoes é uma função', typeof verificarNotificacoes === 'function');
+  ok('mostrarNotificacaoRevisao é uma função', typeof mostrarNotificacaoRevisao === 'function');
+  ok('iniciarVerificacaoHoraria é uma função', typeof iniciarVerificacaoHoraria === 'function');
+
+  // Botão no DOM
+  ok('#btn-notif existe no DOM', !!document.getElementById('btn-notif'));
+
+  // contarCardsDue — sem baralhos deve retornar 0
+  noThrow('contarCardsDue() não lança sem baralhos', () => {
+    const snapBaralhos = baralhos.slice();
+    baralhos.length = 0;
+    const n = contarCardsDue();
+    ok('contarCardsDue() retorna number', typeof n === 'number');
+    ok('contarCardsDue() retorna 0 com baralhos vazios', n === 0);
+    baralhos.push(...snapBaralhos);
+  });
+
+  // contarCardsDue — com card vencido deve contar
+  noThrow('contarCardsDue() conta card vencido', () => {
+    const snapBaralhos = JSON.parse(JSON.stringify(baralhos));
+    baralhos.length = 0;
+    baralhos.push({ id: 'b-test', nome: 'Teste', cards: [
+      { id: 'c1', pergunta: 'P', resposta: 'R', nextReview: Date.now() - 1000, estado: 'aprendendo' },
+      { id: 'c2', pergunta: 'P2', resposta: 'R2', nextReview: Date.now() + 86400000, estado: 'aprendendo' },
+    ]});
+    const n = contarCardsDue();
+    ok('conta apenas o card vencido (1)', n === 1);
+    baralhos.length = 0;
+    baralhos.push(...snapBaralhos);
+  });
+
+  // desativarNotificacoes — limpa localStorage sem lançar
+  noThrow('desativarNotificacoes() não lança', () => {
+    localStorage.setItem('estuda_notif_enabled', '1');
+    localStorage.setItem('estuda_notif_last_date', 'Thu Jan 01 2026');
+    desativarNotificacoes();
+    ok('estuda_notif_enabled removido após desativar', !localStorage.getItem('estuda_notif_enabled'));
+    ok('estuda_notif_last_date removido após desativar', !localStorage.getItem('estuda_notif_last_date'));
+  });
+
+  // verificarNotificacoes sem permissão — não lança
+  noThrow('verificarNotificacoes() não lança sem permissão', () => {
+    verificarNotificacoes(false);
+  });
+
+  // atualizarBotaoNotif sem permissão — botão mostra OFF
+  noThrow('atualizarBotaoNotif() reflete estado OFF', () => {
+    localStorage.removeItem('estuda_notif_enabled');
+    atualizarBotaoNotif();
+    const btn = document.getElementById('btn-notif');
+    ok('botão mostra OFF quando desativado', btn && btn.textContent.includes('OFF'));
+    ok('botão não tem classe notif-ativo quando OFF', btn && !btn.classList.contains('notif-ativo'));
+  });
 
   endSection();
 

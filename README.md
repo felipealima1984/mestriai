@@ -140,7 +140,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (153+ asserções, 24 seções):**
+**Cobertura (173+ asserções, 25 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -168,6 +168,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | LaTeX/MathJax | renderizarLatex (null-safe, sem MathJax), initLatexObserver, config inlineMath/displayMath, override verificarSimulado |
 | PWA | link manifest, meta theme-color/apple/mobile, apple-touch-icon, banner de atualização, navigator.serviceWorker |
 | Logo imagem | #logo-sidebar e #logo-auth (img tags), atualizarLogoTema, troca de src por tema (dark/gray/light) |
+| Notificações SM-2 | contarCardsDue, atualizarBotaoNotif, ativar/desativar/toggle, verificarNotificacoes, #btn-notif |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 
@@ -256,6 +257,18 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 ---
 
 ## Histórico de versões
+
+### v1.11.0 — Notificações locais para revisão SM-2
+- Botão "🔔 Notificações" na sidebar ativa/desativa lembretes de revisão SM-2
+- `Notification.requestPermission()` solicitado apenas no clique — sem popup automático
+- `contarCardsDue()` percorre todos os baralhos e conta cards com `nextReview <= Date.now()`
+- `verificarNotificacoes(forcar)` exibe notificação uma vez por dia quando há cards vencidos
+- `mostrarNotificacaoRevisao(count)` envia mensagem ao Service Worker (`SHOW_NOTIFICATION`) para exibir a notificação nativa do sistema operacional
+- SW: novo handler `notificationclick` foca janela aberta ou abre o app ao clicar na notificação
+- SW: handler `SHOW_NOTIFICATION` chama `self.registration.showNotification()` com título, corpo, ícone e tag
+- Verificação horária via `setInterval` para apps que ficam abertos em segundo plano
+- Cache SW atualizado para `estudaai-v1.10.0`
+- `tests.js` seção 25: 20 asserções cobrindo funções, #btn-notif, contagem de cards e estado do botão
 
 ### v1.10.0 — Logo com imagem (adaptação por tema)
 - Textos "Estuda.AI" no cabeçalho da sidebar e na tela de login substituídos por `<img>` tags

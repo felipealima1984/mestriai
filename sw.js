@@ -1,7 +1,7 @@
 // Estuda.AI — Service Worker
 // Estratégia: cache-first para assets estáticos, network-only para APIs
 
-const CACHE_NAME = 'estudaai-v1.9.0';
+const CACHE_NAME = 'estudaai-v1.10.0';
 
 // Recursos pré-cacheados na instalação (app shell)
 const PRECACHE_URLS = [
@@ -96,9 +96,30 @@ async function handleFetch(request, url) {
   }
 }
 
-// ─── Mensagem de controle (para forçar atualização) ───────────────────────────
+// ─── Clique em notificação ────────────────────────────────────────────────────
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || './';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) {
+        if (c.url.includes(self.location.origin) && 'focus' in c) return c.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+    })
+  );
+});
+
+// ─── Mensagem de controle (para forçar atualização e notificações) ────────────
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (!event.data) return;
+  if (event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  if (event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, body, icon, badge, tag, data } = event.data;
+    event.waitUntil(
+      self.registration.showNotification(title, { body, icon, badge, tag, data })
+    );
   }
 });
