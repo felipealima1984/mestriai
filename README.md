@@ -229,6 +229,14 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Histórico de versões
 
+### v1.5.0 — Diagnóstico de lacunas de conhecimento
+- Novo sistema de rastreamento: `verificarSimulado()` registra acertos e erros por matéria no objeto `lacunas` (persiste em `localStorage.estuda_lacunas`)
+- Nova função `renderDiagnostico(containerId, progId)` exibe ranking das matérias com maior taxa de erro, com barra visual colorida (verde → amarelo → vermelho) e botões de ação direta
+- Botão **"↺ Historinha"** navega para o painel Historinha com a matéria pré-selecionada
+- Botão **"⊛ Revisar SM-2"** navega para Revisão e carrega o baralho da matéria (exibido só quando existe baralho)
+- Seção "Diagnóstico de lacunas" adicionada no Dashboard (CACD e Direito) e no painel Progresso
+- `tests.js` atualizado: nova seção 18 com testes de salvarLacunas, renderDiagnostico (com e sem dados), ordenação por taxa de erro, e simulação do fluxo de rastreamento pós-simulado
+
 ### v1.4.3 — Testes automatizados (tests.js v2)
 - `tests.js` reescrito com cobertura abrangente: 80+ asserções em 19 seções
 - Cobre: uid, helpers de programa/matéria, períodos, persistência localStorage, SM-2 (todos os fluxos de qualidade e transições de estado), gamificação (getNivel nos 4 níveis, ganharXP, criarBaralho, streak), freemium (contarGeracao, isPremium, verificarResetMensal, ativarPremiumDemo), histórico (limite 30), contexto IA (getContextoMateria, getEscopoUnidade), tema, navegação (BUG FIX 1 + 2), renderizações (smoke)
@@ -297,7 +305,7 @@ Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por 
 - [x] Testes automatizados básicos (`tests.js`)
 
 ### Fase 2 — Features diferenciadoras
-- [ ] Diagnóstico de lacunas de conhecimento (tópicos com mais erros no simulado)
+- [x] Diagnóstico de lacunas de conhecimento (tópicos com mais erros no simulado)
 - [ ] Compartilhamento de programas de estudo (export/import JSON)
 - [ ] Estimativa de prontidão para a prova
 - [ ] Suporte a LaTeX/MathJax nas respostas

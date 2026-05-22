@@ -410,6 +410,11 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
 .prior-name{flex:1;font-size:13px;}
 .prior-pct{font-size:12px;font-weight:600;color:var(--muted);}
 
+/* DIAGNÓSTICO DE LACUNAS */
+.lacuna-item{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-bottom:8px;}
+.lacuna-bar-bg{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:4px;}
+.lacuna-bar-fill{height:100%;border-radius:3px;transition:width .4s ease;}
+
 /* PROGRAMAS */
 .prog-toggle{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px;max-width:340px;overflow-x:auto;}
 .prog-btn{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:var(--font-body);white-space:nowrap;transition:all .15s;flex-shrink:0;}
@@ -574,6 +579,9 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
         <div class="section-title">Matérias CACD cadastradas</div>
         <div id="dash-cacd-materias" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px"></div>
 
+        <div class="section-title">Diagnóstico de lacunas</div>
+        <div id="diag-cacd" style="margin-bottom:24px"></div>
+
         <div class="section-title">Acesso rápido</div>
         <div class="quick-actions">
           <div class="qa-card cacd" onclick="goToNamed('historinha','cacd')">
@@ -626,6 +634,9 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
         <div id="dash-dir-materias" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px">
           <div style="font-size:13px;color:var(--muted)">Nenhuma matéria vinculada ao período ativo.</div>
         </div>
+
+        <div class="section-title">Diagnóstico de lacunas</div>
+        <div id="diag-dir" style="margin-bottom:24px"></div>
 
         <div class="section-title">Acesso rápido</div>
         <div class="quick-actions">
@@ -1241,6 +1252,9 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
       </div>
       <div class="section-title">Matérias por prioridade (menos dominadas primeiro)</div>
       <div id="prior-list" style="margin-bottom:24px"></div>
+      <div class="section-title">Diagnóstico de lacunas — simulados</div>
+      <div id="diag-prog" style="margin-bottom:24px"></div>
+
       <div class="section-title">Consistência — últimos 30 dias</div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:24px">
         <div style="display:flex;gap:12px;font-size:11px;color:var(--muted);margin-bottom:8px">
@@ -1489,6 +1503,9 @@ let stats = JSON.parse(localStorage.getItem('estuda_stats') || '{"historinhas":0
 let historico = JSON.parse(localStorage.getItem('estuda_historico') || '[]');
 let materias = JSON.parse(localStorage.getItem('estuda_materias') || 'null') || MATERIAS_DEFAULT;
 let simQuestoes = [], simRespostas = {}, simGabarito = {};
+let simMateriaIdAtual = null;
+let lacunas = JSON.parse(localStorage.getItem('estuda_lacunas') || '{}');
+function salvarLacunas() { localStorage.setItem('estuda_lacunas', JSON.stringify(lacunas)); }
 
 // --- Helpers de programa ---
 function salvarProgramas() {
@@ -1945,6 +1962,9 @@ function renderDashboard() {
       ? mCacd.map(m => `<span style="font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(200,169,110,0.12);border:1px solid rgba(200,169,110,0.25);color:var(--cacd);cursor:pointer" onclick="goToNamed('historinha','cacd')">${m.nome.split('—')[0].trim()}</span>`).join('')
       : '<span style="font-size:13px;color:var(--muted)">Nenhuma matéria CACD cadastrada.</span>';
 
+    // Diagnóstico de lacunas CACD
+    renderDiagnostico('diag-cacd', programaAtivoId);
+
     // Histórico filtrado CACD
     renderHistoricoFiltrado('cacd');
 
@@ -1980,6 +2000,9 @@ function renderDashboard() {
     });
     document.getElementById('stat-acerto-dir').textContent = totDir > 0
       ? Math.round(acDir / totDir * 100) + '%' : '—';
+
+    // Diagnóstico de lacunas Direito
+    renderDiagnostico('diag-dir', programaAtivoId);
 
     // Histórico filtrado Direito
     renderHistoricoFiltrado('dir');
@@ -2378,6 +2401,7 @@ Formato JSON puro (sem markdown):
   btn.innerHTML = '<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span>';
   document.getElementById('sim-questoes').style.display = 'none';
   document.getElementById('sim-acao').style.display = 'none';
+  simMateriaIdAtual = matId;
   simRespostas = {}; simGabarito = {};
 
   try {
@@ -2435,6 +2459,16 @@ function verificarSimulado() {
   stats.acertos += acertos;
   stats.tentativas += simQuestoes.length;
   salvarStats();
+  // Registrar no diagnóstico de lacunas por matéria
+  if (simMateriaIdAtual) {
+    if (!lacunas[simMateriaIdAtual]) {
+      const m = getMateria(simMateriaIdAtual);
+      lacunas[simMateriaIdAtual] = { nome: m ? m.nome : simMateriaIdAtual, programaId: m ? (m.programaId || m.frente) : programaAtivoId, acertos: 0, erros: 0 };
+    }
+    lacunas[simMateriaIdAtual].acertos += acertos;
+    lacunas[simMateriaIdAtual].erros   += (simQuestoes.length - acertos);
+    salvarLacunas();
+  }
   adicionarHistorico('simulado', getProgLabel(programaAtivoId), `${acertos}/${simQuestoes.length} acertos`);
   toast(`✓ ${acertos} de ${simQuestoes.length} corretas`);
   document.getElementById('sim-acao').innerHTML = `<button class="btn btn-secondary" onclick="novoSimulado()">Novo simulado</button>`;
@@ -2446,6 +2480,72 @@ function novoSimulado() {
   document.getElementById('sim-acao').style.display = 'none';
   document.getElementById('sim-acao').innerHTML = `<button class="btn btn-primary-cacd" onclick="verificarSimulado()">Verificar respostas</button><button class="btn btn-secondary" style="margin-left:8px" onclick="novoSimulado()">Novo simulado</button>`;
   simQuestoes=[]; simRespostas={}; simGabarito={};
+}
+
+// ============================================================
+// DIAGNÓSTICO DE LACUNAS
+// ============================================================
+function renderDiagnostico(containerId, progId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  const dados = Object.entries(lacunas)
+    .filter(([id, d]) => {
+      const m = getMateria(id);
+      const pid = m ? (m.programaId || m.frente) : d.programaId;
+      return pid === progId;
+    })
+    .map(([id, d]) => {
+      const total = d.acertos + d.erros;
+      const taxaErro = total > 0 ? d.erros / total : 0;
+      return { id, nome: d.nome, acertos: d.acertos, erros: d.erros, total, taxaErro };
+    })
+    .filter(d => d.total > 0)
+    .sort((a, b) => b.taxaErro - a.taxaErro)
+    .slice(0, 5);
+
+  if (!dados.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:4px 0">Faça simulados para ver as matérias com mais erros.</div>';
+    return;
+  }
+
+  el.innerHTML = dados.map(d => {
+    const pct = Math.round(d.taxaErro * 100);
+    const cor  = pct >= 70 ? 'var(--red)' : pct >= 40 ? 'var(--cacd)' : 'var(--green)';
+    const temBaralho = baralhos.some(b => b.matId === d.id);
+    return `<div class="lacuna-item">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:13px;font-weight:500">${d.nome.split('—')[0].trim()}</div>
+        <span style="font-size:11px;color:${cor};font-weight:600">${pct}% erros (${d.erros}/${d.total})</span>
+      </div>
+      <div class="lacuna-bar-bg"><div class="lacuna-bar-fill" style="width:${pct}%;background:${cor}"></div></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-secondary btn-sm" style="font-size:11px" onclick="irParaHistorinha('${d.id}')">↺ Historinha</button>
+        ${temBaralho ? `<button class="btn btn-secondary btn-sm" style="font-size:11px" onclick="irParaRevisao('${d.id}')">⊛ Revisar SM-2</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function irParaHistorinha(materiaId) {
+  const m = getMateria(materiaId);
+  if (!m) return;
+  setModo(m.programaId || m.frente);
+  goTo('historinha', null);
+  setTimeout(() => {
+    const sel = document.getElementById('cacd-materia');
+    if (sel) sel.value = materiaId;
+  }, 60);
+}
+
+function irParaRevisao(materiaId) {
+  const b = baralhos.find(x => x.matId === materiaId);
+  if (!b) return;
+  goTo('revisao', null);
+  setTimeout(() => {
+    const sel = document.getElementById('rev-deck-select');
+    if (sel) { sel.value = b.id; carregarRevisao && carregarRevisao(); }
+  }, 60);
 }
 
 // ============================================================
@@ -3327,6 +3427,7 @@ function renderProgresso() {
   renderXP();
   renderDominio();
   renderPrioridade();
+  renderDiagnostico('diag-prog', programaAtivoId);
   renderConsistencia();
   renderHistorico();
 }
