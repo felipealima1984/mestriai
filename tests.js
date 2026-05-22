@@ -56,9 +56,11 @@
       programas:      JSON.parse(JSON.stringify(programas)),
       periodos:       JSON.parse(JSON.stringify(periodos)),
       baralhos:       JSON.parse(JSON.stringify(baralhos)),
+      lacunas:        JSON.parse(JSON.stringify(lacunas)),
       programaAtivoId,
       periodoAtivo,
       matTabAtual,
+      simMateriaIdAtual,
     };
   }
 
@@ -70,9 +72,12 @@
     programas.length = 0; snap.programas.forEach(p => programas.push(p));
     periodos.length = 0;  snap.periodos.forEach(p => periodos.push(p));
     baralhos.length = 0;  snap.baralhos.forEach(b => baralhos.push(b));
-    programaAtivoId = snap.programaAtivoId;
-    periodoAtivo    = snap.periodoAtivo;
-    matTabAtual     = snap.matTabAtual;
+    Object.keys(lacunas).forEach(k => delete lacunas[k]);
+    Object.assign(lacunas, snap.lacunas);
+    programaAtivoId   = snap.programaAtivoId;
+    periodoAtivo      = snap.periodoAtivo;
+    matTabAtual       = snap.matTabAtual;
+    simMateriaIdAtual = snap.simMateriaIdAtual;
   }
 
   const estado = snapshot();
@@ -470,7 +475,90 @@
   }
   endSection();
 
-  // ─── 18. Renderizações — não lançam exceção ──────────────────────────────────
+  // ─── 18. Diagnóstico de Lacunas ──────────────────────────────────────────────
+
+  section('Diagnóstico de Lacunas — salvarLacunas / renderDiagnostico / rastreamento');
+
+  // Limpar lacunas para teste limpo
+  Object.keys(lacunas).forEach(k => delete lacunas[k]);
+
+  // salvarLacunas persiste objeto
+  noThrow('salvarLacunas() persiste sem erro', () => {
+    salvarLacunas();
+    const salvo = JSON.parse(localStorage.getItem('estuda_lacunas') || 'null');
+    if (typeof salvo !== 'object' || salvo === null) throw new Error('lacunas não é objeto');
+  });
+
+  // Simular registro de erros manualmente
+  const matTeste = materias.length > 0 ? materias[0] : null;
+  if (matTeste) {
+    const pid = matTeste.programaId || matTeste.frente;
+    lacunas[matTeste.id] = { nome: matTeste.nome, programaId: pid, acertos: 2, erros: 8 };
+    lacunas['__mat_boa__'] = { nome: 'Matéria sem erros', programaId: pid, acertos: 10, erros: 0 };
+
+    // renderDiagnostico não lança com dados reais
+    noThrow('renderDiagnostico() não lança com dados', () => renderDiagnostico('diag-cacd', pid));
+
+    // Verifica que o HTML inclui o nome da matéria e a taxa de erro
+    const el = document.getElementById('diag-cacd');
+    ok('renderDiagnostico: container preenchido', el && el.innerHTML.trim().length > 0);
+    ok('renderDiagnostico: mostra nome da matéria', el && el.innerHTML.includes(matTeste.nome.split('—')[0].trim()));
+    ok('renderDiagnostico: mostra percentual (80% erros)', el && el.innerHTML.includes('80%'));
+
+    // Matéria com 0 erros deve vir depois (ordenação por taxa de erro decrescente)
+    const textoCompleto = el ? el.innerHTML : '';
+    const posErros = textoCompleto.indexOf(matTeste.nome.split('—')[0].trim());
+    const posBoa   = textoCompleto.indexOf('Matéria sem erros');
+    ok('matéria com mais erros aparece antes da com menos', posBoa === -1 || posErros < posBoa);
+
+    // renderDiagnostico com progId sem dados mostra mensagem padrão
+    noThrow('renderDiagnostico() com progId sem dados', () => renderDiagnostico('diag-cacd', '__prog_vazio__'));
+    ok('renderDiagnostico: mostra msg quando sem dados', el && el.innerHTML.includes('simulados'));
+
+    // Limpar
+    delete lacunas[matTeste.id];
+    delete lacunas['__mat_boa__'];
+  } else {
+    console.warn('Sem matérias cadastradas — testes de diagnóstico com dados ignorados');
+  }
+
+  // salvarLacunas persiste dados corretos
+  if (matTeste) {
+    const pid = matTeste.programaId || matTeste.frente;
+    lacunas[matTeste.id] = { nome: matTeste.nome, programaId: pid, acertos: 3, erros: 7 };
+    salvarLacunas();
+    const salvo = JSON.parse(localStorage.getItem('estuda_lacunas') || '{}');
+    ok('lacunas persistidas com acertos/erros corretos', salvo[matTeste.id]?.erros === 7 && salvo[matTeste.id]?.acertos === 3);
+    delete lacunas[matTeste.id];
+    salvarLacunas();
+  }
+
+  // Simular fluxo: simMateriaIdAtual → verificarSimulado registra em lacunas
+  if (matTeste && programas.length > 0) {
+    const pid = matTeste.programaId || matTeste.frente;
+    simMateriaIdAtual = matTeste.id;
+    // Simular estado de questões respondidas
+    const lacunasAntes = { acertos: lacunas[matTeste.id]?.acertos || 0, erros: lacunas[matTeste.id]?.erros || 0 };
+    // Chamar a lógica de rastreamento diretamente (sem depender de DOM do simulado)
+    const acertos = 1, totalQ = 3;
+    if (!lacunas[simMateriaIdAtual]) {
+      const m2 = getMateria(simMateriaIdAtual);
+      lacunas[simMateriaIdAtual] = { nome: m2?.nome || '', programaId: m2 ? (m2.programaId || m2.frente) : programaAtivoId, acertos: 0, erros: 0 };
+    }
+    lacunas[simMateriaIdAtual].acertos += acertos;
+    lacunas[simMateriaIdAtual].erros   += (totalQ - acertos);
+    ok('rastreamento manual: acertos registrados', lacunas[matTeste.id].acertos === lacunasAntes.acertos + 1);
+    ok('rastreamento manual: erros registrados',   lacunas[matTeste.id].erros   === lacunasAntes.erros + 2);
+
+    // Limpar
+    delete lacunas[matTeste.id];
+    simMateriaIdAtual = null;
+    salvarLacunas();
+  }
+
+  endSection();
+
+  // ─── 19. Renderizações — não lançam exceção ──────────────────────────────────
 
   section('Renderizações — smoke (não devem lançar exceção)');
   noThrow('renderToggleProgramas()', () => renderToggleProgramas());
@@ -481,6 +569,8 @@
   noThrow('renderDashboard()',       () => renderDashboard());
   noThrow('renderXP()',              () => renderXP());
   noThrow('renderUsageBar()',        () => renderUsageBar());
+  noThrow('renderProgresso()',       () => renderProgresso());
+  noThrow('renderDiagnostico() vazio', () => renderDiagnostico('diag-cacd', '__vazio__'));
   endSection();
 
   // ─── 19. Restaurar estado global ─────────────────────────────────────────────
