@@ -8,6 +8,11 @@ Hospedada em **GitHub Pages** — sem backend próprio.
 
 ## Funcionalidades
 
+### Instalável como app (PWA)
+O Estuda.AI é um Progressive Web App. No Chrome/Edge, clique em **"Instalar"** na barra de endereço para adicionar à tela inicial do celular ou ao desktop — abre sem barra de navegação, como um app nativo. No Safari (iOS), use **Compartilhar → Adicionar à Tela de Início**.
+
+Funciona **offline**: o app shell (HTML/CSS/JS) é cacheado pelo Service Worker. Sem internet, você ainda pode navegar, revisar flashcards SM-2 e ler historinhas salvas. Geração de conteúdo e sync Supabase requerem rede.
+
 ### Múltiplos programas de estudo
 Crie quantos programas quiser (CACD, Direito, qualquer concurso). Cada programa tem suas matérias, tópicos e configurações independentes. Um seletor rápido na sidebar alterna entre eles.
 
@@ -107,6 +112,11 @@ Arquivo principal: `index.html` (~4300 linhas) — sem `package.json`, sem build
 ```
 estuda-ai/
 ├── index.html                        # App completo (single-file)
+├── manifest.json                     # PWA manifest (nome, ícones, display, theme_color)
+├── sw.js                             # Service Worker (cache-first, fallback offline)
+├── icons/
+│   ├── icon-192.svg                  # Ícone PWA 192×192 (any)
+│   └── icon-512.svg                  # Ícone PWA 512×512 (any maskable)
 ├── README.md                         # Este arquivo
 ├── ROADMAP.md                        # Lista priorizada de melhorias com estimativas de horas
 ├── ROADMAP.docx                      # Versão impressa do roadmap
@@ -127,7 +137,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (125+ asserções, 22 seções):**
+**Cobertura (140+ asserções, 23 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -153,6 +163,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | Compartilhamento de programas | _montarExportPrograma (campos, isolamento de ids), round-trip export→import, validação de formato inválido |
 | Estimativa de prontidão | calcularProntidao: totalMaterias, coberturaAtual, diasRestantes (futuro/passado/null), estimadoFinal, detecção de matérias com lacunas |
 | LaTeX/MathJax | renderizarLatex (null-safe, sem MathJax), initLatexObserver, config inlineMath/displayMath, override verificarSimulado |
+| PWA | link manifest, meta theme-color/apple/mobile, apple-touch-icon, banner de atualização, navigator.serviceWorker |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 
@@ -241,6 +252,16 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 ---
 
 ## Histórico de versões
+
+### v1.9.0 — PWA: instalação e modo offline
+- `manifest.json` com nome, ícones, `display: standalone`, `theme_color: #c8a96e` e atalhos de teclado (Historinha e Simulado)
+- Ícones SVG em `icons/icon-192.svg` (any) e `icons/icon-512.svg` (any maskable — safe zone 80%)
+- Service Worker (`sw.js`) com estratégia cache-first: pré-cacheia o app shell na instalação, cacheia CDN externos dinamicamente (jsdelivr, googleapis), nunca cacheia chamadas de API (Anthropic, Supabase)
+- Cache versionado (`estudaai-v1.9.0`) — `activate` deleta caches antigos e chama `clients.claim()`; `install` chama `skipWaiting()` para transição rápida
+- Fallback offline: `navigate` sem rede devolve `index.html` do cache — app abre mesmo sem conexão
+- Meta tags iOS: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, `apple-mobile-web-app-title`, `apple-touch-icon`
+- Banner discreto de "Nova versão disponível" aparece quando um SW atualizado está esperando; botão Atualizar envia `SKIP_WAITING` e recarrega
+- `tests.js` seção 23: 14 asserções — link manifest, theme-color, meta tags apple/mobile, banner DOM, navigator.serviceWorker
 
 ### v1.8.0 — Suporte a LaTeX/MathJax
 - MathJax 3 carregado assincronamente via CDN (`tex-svg.js`) com config `startup.typeset: false` (não tipeseta automaticamente — só quando chamado)
@@ -332,7 +353,7 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Roadmap
 
-Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por atividade (~62h restantes).
+Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por atividade (~56h restantes).
 
 **Estratégia:** construir valor primeiro, monetizar por último.  
 **Regra de trabalho:** cada item inicia em branch dedicada → atualiza README → merge na main → push.
@@ -351,7 +372,7 @@ Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por 
 - [x] Suporte a LaTeX/MathJax nas respostas
 
 ### Fase 3 — Retenção e produto completo
-- [ ] PWA + Service Worker (instalação no celular, offline real)
+- [x] PWA + Service Worker (instalação no celular, offline real)
 - [ ] Push notifications para revisão SM-2
 - [ ] Onboarding wizard para novos usuários
 - [ ] Histórico de notas das redações com gráfico de evolução

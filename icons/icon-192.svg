@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- Fundo com cantos arredondados -->
+  <rect width="192" height="192" rx="36" fill="#0e0f14"/>
+  <!-- Estrela de 4 pontas (símbolo do app) -->
+  <polygon points="96,18 108,78 168,96 108,114 96,174 84,114 24,96 84,78" fill="#c8a96e"/>
+  <!-- Ponto central para dar profundidade -->
+  <circle cx="96" cy="96" r="8" fill="#0e0f14" opacity="0.6"/>
+</svg>

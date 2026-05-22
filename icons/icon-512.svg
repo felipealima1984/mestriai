@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Fundo sólido (maskable: preenche o quadrado inteiro) -->
+  <rect width="512" height="512" fill="#0e0f14"/>
+  <!-- Estrela de 4 pontas dentro da safe zone (51px–461px = 80%) -->
+  <polygon points="256,80 278,218 416,256 278,294 256,432 234,294 96,256 234,218" fill="#c8a96e"/>
+  <!-- Anel interno para profundidade -->
+  <circle cx="256" cy="256" r="22" fill="#0e0f14" opacity="0.5"/>
+  <!-- Texto "AI" abaixo da estrela, dentro da safe zone -->
+  <text x="256" y="460" font-family="Arial,Helvetica,sans-serif" font-size="52" font-weight="700" fill="#c8a96e" text-anchor="middle" letter-spacing="6" opacity="0.85">ESTUDA.AI</text>
+</svg>
