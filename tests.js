@@ -18,6 +18,7 @@
  *  - Navegação: goTo, setModo, switchMatTab (inclui verificação dos BUG FIX 1 e 2)
  *  - Renderizações: não lançam exceção (renderDashboard, renderCrudLista, etc.)
  *  - Compartilhamento de programas: _montarExportPrograma, _executarImportPrograma, round-trip export→import
+ *  - Estimativa de prontidão: calcularProntidao (totalMaterias, coberturaAtual, diasRestantes, estimadoFinal), lacunas, datas passada/futura/sem data
  */
 (() => {
   'use strict';
@@ -643,7 +644,80 @@
 
   endSection();
 
-  // ─── 21. Restaurar estado global ─────────────────────────────────────────────
+  // ─── 21. Estimativa de prontidão (Tarefa 8) ──────────────────────────────────
+
+  section('Estimativa de prontidão para a prova — calcularProntidao');
+
+  if (programas.length > 0) {
+    const progTeste = programas[0];
+    const mats = getTodasMaterias(progTeste.id);
+
+    // -- Sem matérias: retorna null --
+    ok('calcularProntidao(fake) retorna null', calcularProntidao('__fake__') === null);
+
+    if (mats.length > 0) {
+      const dados = calcularProntidao(progTeste.id);
+      ok('calcularProntidao retorna objeto',          dados !== null && typeof dados === 'object');
+      ok('totalMaterias é número positivo',           dados && dados.totalMaterias > 0);
+      ok('estudadas é número >= 0',                   dados && dados.estudadas >= 0);
+      ok('estudadas <= totalMaterias',                dados && dados.estudadas <= dados.totalMaterias);
+      ok('coberturaAtual está entre 0 e 100',         dados && dados.coberturaAtual >= 0 && dados.coberturaAtual <= 100);
+      ok('estimadoFinal >= coberturaAtual',           dados && dados.estimadoFinal >= dados.coberturaAtual);
+      ok('estimadoFinal <= 100',                      dados && dados.estimadoFinal <= 100);
+      ok('ritmoSemana é número >= 0',                 dados && dados.ritmoSemana >= 0);
+      ok('progId corresponde ao programa testado',    dados && dados.progId === progTeste.id);
+
+      // -- Com dataProva futura: diasRestantes > 0 --
+      const dataFutura = new Date(); dataFutura.setFullYear(dataFutura.getFullYear() + 1);
+      const isoFuturo = dataFutura.toISOString().slice(0, 10);
+      const progOrigDataProva = progTeste.dataProva;
+      progTeste.dataProva = isoFuturo;
+
+      const dadosFuturo = calcularProntidao(progTeste.id);
+      ok('diasRestantes > 0 com data futura',         dadosFuturo && dadosFuturo.diasRestantes > 0);
+      ok('estimadoFinal >= coberturaAtual (futura)',   dadosFuturo && dadosFuturo.estimadoFinal >= dadosFuturo.coberturaAtual);
+
+      // -- Com dataProva passada: diasRestantes = 0 --
+      progTeste.dataProva = '2020-01-01';
+      const dadosPassado = calcularProntidao(progTeste.id);
+      ok('diasRestantes = 0 com data passada',        dadosPassado && dadosPassado.diasRestantes === 0);
+
+      // -- Sem dataProva: diasRestantes null --
+      progTeste.dataProva = '';
+      const dadosSemData = calcularProntidao(progTeste.id);
+      ok('diasRestantes null sem data',               dadosSemData && dadosSemData.diasRestantes === null);
+      ok('estimadoFinal = coberturaAtual sem data',   dadosSemData && dadosSemData.estimadoFinal === dadosSemData.coberturaAtual);
+
+      // Restaurar dataProva original
+      progTeste.dataProva = progOrigDataProva;
+    } else {
+      console.warn('Programa sem matérias — sub-seção de cálculo ignorada');
+    }
+
+    // -- renderProntidao não lança exceção --
+    noThrow('renderProntidao() sem container DOM não lança', () => renderProntidao('__nao_existe__', progTeste.id));
+    noThrow('renderProntidao() CACD não lança', () => renderProntidao('prontidao-cacd', progTeste.id));
+    noThrow('renderProntidao() Direito não lança', () => renderProntidao('prontidao-dir', progTeste.id));
+
+    // -- Matérias com lacunas são detectadas --
+    if (mats.length > 0) {
+      const matAlvo = mats[0];
+      const lacAntes = lacunas[matAlvo.id];
+      lacunas[matAlvo.id] = { acertos: 3, erros: 1 };
+      const dadosComLacuna = calcularProntidao(progTeste.id);
+      ok('matéria com lacuna é contada como estudada', dadosComLacuna && dadosComLacuna.estudadas >= 1);
+      // Restaurar
+      if (lacAntes === undefined) delete lacunas[matAlvo.id];
+      else lacunas[matAlvo.id] = lacAntes;
+    }
+
+  } else {
+    console.warn('Sem programas — seção 21 ignorada');
+  }
+
+  endSection();
+
+  // ─── Restaurar estado global ─────────────────────────────────────────────────
 
   restore(estado);
   try { goTo('dashboard', null); } catch (_) {}

@@ -14,6 +14,9 @@ Crie quantos programas quiser (CACD, Direito, qualquer concurso). Cada programa 
 ### Compartilhamento de programas
 Exporte qualquer programa de estudos (incluindo todas as matérias e tópicos) como arquivo `.json` ou como código copiável. Importe programas recebidos de outros usuários com um clique — sem conflito de IDs, sem sobrescrever dados existentes. Botão **Exportar** em cada programa e **Importar** no cabeçalho da seção de Programas.
 
+### Estimativa de prontidão para a prova
+Widget no Dashboard que calcula e projeta a cobertura de conteúdo até a data do exame. Define a **data da prova** no modal de edição do programa. Exibe duas barras: cobertura atual (baseada em simulados e histórico de atividades) e estimativa na data da prova (projetada pelo ritmo semanal atual). A mensagem se adapta ao cenário: verde para cobertura alta, laranja para média, vermelho para baixa.
+
 ### Historinhas
 Gera narrativas curtas para memorização. O modelo recebe a matéria, a unidade (N1/N2/N3) e os tópicos cadastrados como contexto, produzindo uma história com personagens que cristaliza os conceitos em bullet points no final.
 
@@ -121,7 +124,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (95+ asserções, 20 seções):**
+**Cobertura (110+ asserções, 21 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -145,6 +148,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | Renderizações | renderDashboard, renderCrudLista, renderMatTabs, renderBaralhos, renderXP, renderUsageBar |
 | Diagnóstico de lacunas | salvarLacunas, renderDiagnostico, ordenação, rastreamento pós-simulado |
 | Compartilhamento de programas | _montarExportPrograma (campos, isolamento de ids), round-trip export→import, validação de formato inválido |
+| Estimativa de prontidão | calcularProntidao: totalMaterias, coberturaAtual, diasRestantes (futuro/passado/null), estimadoFinal, detecção de matérias com lacunas |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 
@@ -234,6 +238,14 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Histórico de versões
 
+### v1.7.0 — Estimativa de prontidão para a prova
+- Campo **Data da prova / conclusão** adicionado ao modal de edição/criação de programa (salvo em `prog.dataProva`)
+- Nova função `calcularProntidao(progId)` calcula: cobertura atual (matérias com atividade em `lacunas` ou `historico`), ritmo semanal (sessões / janela de 14 dias), dias restantes e estimativa de cobertura final com taxa de conversão de 40% (40% das sessões adicionam uma matéria nova, o restante são revisões)
+- Nova função `renderProntidao(containerId, progId)` renderiza widget no Dashboard com duas barras de progresso (cobertura atual e estimativa projetada), contadores e mensagem adaptativa (verde ≥90%, laranja ≥60%, vermelho <60%)
+- Widget exibido no Dashboard para o programa ativo (CACD e Direito), com botão de atalho para editar a data da prova
+- Sem data configurada: exibe cobertura atual e convida o usuário a definir a data
+- `tests.js` atualizado: nova seção 21 com 14 asserções cobrindo cálculo, projeção com data futura, data passada, sem data, detecção de matérias com lacunas e smoke tests de renderização
+
 ### v1.6.0 — Compartilhamento de programas de estudo
 - Novo botão **Exportar** em cada programa na seção Programas de Estudo
 - Novo botão **Importar** no cabeçalho da seção, abre modal com upload de arquivo `.json` ou código colado
@@ -306,7 +318,7 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Roadmap
 
-Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por atividade (~69h restantes).
+Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por atividade (~65h restantes).
 
 **Estratégia:** construir valor primeiro, monetizar por último.  
 **Regra de trabalho:** cada item inicia em branch dedicada → atualiza README → merge na main → push.
@@ -321,7 +333,7 @@ Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por 
 ### Fase 2 — Features diferenciadoras
 - [x] Diagnóstico de lacunas de conhecimento (tópicos com mais erros no simulado)
 - [x] Compartilhamento de programas de estudo (export/import JSON)
-- [ ] Estimativa de prontidão para a prova
+- [x] Estimativa de prontidão para a prova
 - [ ] Suporte a LaTeX/MathJax nas respostas
 
 ### Fase 3 — Retenção e produto completo

@@ -134,6 +134,30 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
 .fill-cacd{background:var(--cacd);}.fill-dir{background:var(--dir);}
 .materia-pct{font-size:11px;font-weight:600;width:30px;text-align:right;}
 
+/* PRONTIDÃO PARA A PROVA */
+.prontidao-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:24px;}
+.prontidao-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.prontidao-titulo{font-family:var(--font-head);font-size:14px;font-weight:700;}
+.prontidao-dias{font-size:12px;color:var(--muted);}
+.prontidao-dias strong{color:var(--text);font-size:15px;}
+.prontidao-bar-row{margin-bottom:10px;}
+.prontidao-bar-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.prontidao-bar-label span{font-size:11px;color:var(--muted);}
+.prontidao-bar-label strong{font-size:13px;font-weight:700;}
+.prontidao-bar-track{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative;}
+.prontidao-bar-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.prontidao-fill-atual{background:var(--cacd);}
+.prontidao-fill-atual-dir{background:var(--dir);}
+.prontidao-fill-proj{background:linear-gradient(90deg,var(--cacd),rgba(200,169,110,0.45));}
+.prontidao-fill-proj-dir{background:linear-gradient(90deg,var(--dir),rgba(110,155,200,0.45));}
+.prontidao-msg{font-size:12px;color:var(--muted);line-height:1.55;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.prontidao-msg em{color:var(--text);font-style:normal;font-weight:500;}
+.prontidao-vazio{text-align:center;padding:20px 0;color:var(--muted);font-size:13px;}
+.prontidao-vazio p{margin-bottom:12px;}
+.prontidao-stats{display:flex;gap:20px;margin-top:6px;margin-bottom:12px;}
+.prontidao-stat{font-size:12px;color:var(--muted);}
+.prontidao-stat strong{color:var(--text);font-weight:600;}
+
 /* REDAÇÃO */
 .tema-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
 .tema-titulo{font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:6px;}
@@ -582,6 +606,9 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
         <div class="section-title">Diagnóstico de lacunas</div>
         <div id="diag-cacd" style="margin-bottom:24px"></div>
 
+        <div class="section-title">Prontidão para a prova</div>
+        <div id="prontidao-cacd"></div>
+
         <div class="section-title">Acesso rápido</div>
         <div class="quick-actions">
           <div class="qa-card cacd" onclick="goToNamed('historinha','cacd')">
@@ -637,6 +664,9 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
 
         <div class="section-title">Diagnóstico de lacunas</div>
         <div id="diag-dir" style="margin-bottom:24px"></div>
+
+        <div class="section-title">Prontidão para a prova</div>
+        <div id="prontidao-dir"></div>
 
         <div class="section-title">Acesso rápido</div>
         <div class="quick-actions">
@@ -1340,6 +1370,10 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
       <label class="form-label">Ano / Meta</label>
       <input class="form-input" id="prog-ano-input" placeholder="Ex: 2027, 2025.1…"/>
     </div>
+    <div class="form-group">
+      <label class="form-label">Data da prova / conclusão <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+      <input class="form-input" type="date" id="prog-data-prova-input"/>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="fecharModalPrograma()">Cancelar</button>
       <button class="btn btn-primary-cacd" onclick="salvarPrograma()" id="btn-salvar-prog">Salvar</button>
@@ -1667,6 +1701,7 @@ function abrirModalPrograma(id) {
   document.getElementById('prog-nome-input').value = p ? p.nome : '';
   document.getElementById('prog-inst-input').value = p ? (p.instituicao||'') : '';
   document.getElementById('prog-ano-input').value  = p ? (p.ano||'') : '';
+  document.getElementById('prog-data-prova-input').value = p ? (p.dataProva||'') : '';
   selecionarTipoPrograma(p ? p.tipo : 'concurso');
   document.getElementById('modal-programa').classList.add('visible');
   setTimeout(() => document.getElementById('prog-nome-input').focus(), 100);
@@ -1684,13 +1719,15 @@ function selecionarTipoPrograma(tipo) {
 function salvarPrograma() {
   const nome = document.getElementById('prog-nome-input').value.trim();
   if (!nome) { toast('Informe o nome do programa'); return; }
-  const inst = document.getElementById('prog-inst-input').value.trim();
-  const ano  = document.getElementById('prog-ano-input').value.trim();
+  const inst      = document.getElementById('prog-inst-input').value.trim();
+  const ano       = document.getElementById('prog-ano-input').value.trim();
+  const dataProva = document.getElementById('prog-data-prova-input').value || '';
   if (editandoProgramaId) {
     const p = getPrograma(editandoProgramaId);
     p.nome = nome; p.tipo = tipoProgramaSelecionado; p.instituicao = inst; p.ano = ano;
+    p.dataProva = dataProva;
   } else {
-    programas.push({ id: uid(), nome, tipo: tipoProgramaSelecionado, instituicao: inst, ano, ativo: false });
+    programas.push({ id: uid(), nome, tipo: tipoProgramaSelecionado, instituicao: inst, ano, dataProva, ativo: false });
   }
   salvarProgramas();
   renderToggleProgramas();
@@ -2002,6 +2039,9 @@ function renderDashboard() {
     // Diagnóstico de lacunas CACD
     renderDiagnostico('diag-cacd', programaAtivoId);
 
+    // Prontidão para a prova
+    renderProntidao('prontidao-cacd', programaAtivoId);
+
     // Histórico filtrado CACD
     renderHistoricoFiltrado('cacd');
 
@@ -2040,6 +2080,9 @@ function renderDashboard() {
 
     // Diagnóstico de lacunas Direito
     renderDiagnostico('diag-dir', programaAtivoId);
+
+    // Prontidão para a prova
+    renderProntidao('prontidao-dir', programaAtivoId);
 
     // Histórico filtrado Direito
     renderHistoricoFiltrado('dir');
@@ -4424,6 +4467,157 @@ function injetarGraficosProgresso() {
   // Inserir antes da seção de consistência
   const consist = panel.querySelector('.section-title');
   if (consist) panel.insertBefore(graficos, consist);
+}
+
+// ============================================================
+// ESTIMATIVA DE PRONTIDÃO PARA A PROVA (TAREFA 8)
+// ============================================================
+
+function calcularProntidao(progId) {
+  const prog = getPrograma(progId);
+  if (!prog) return null;
+  const mats = getTodasMaterias(progId);
+  const totalMaterias = mats.length;
+  if (totalMaterias === 0) return null;
+
+  // Materias com atividade confirmada via simulados (lacunas)
+  const estudadasSet = new Set();
+  mats.forEach(m => {
+    if (lacunas[m.id] && (lacunas[m.id].acertos > 0 || lacunas[m.id].erros > 0)) {
+      estudadasSet.add(m.id);
+    }
+  });
+
+  // Complementar com historico: entradas que mencionam o nome de uma matéria no detalhe
+  const progLabel = prog.nome;
+  const histProg = historico.filter(h =>
+    h.frente === progLabel || h.frente === progId ||
+    h.frente === 'CACD' && (progId === 'prog-cacd' || prog.tipo === 'concurso') ||
+    h.programaId === progId
+  );
+  histProg.forEach(h => {
+    if (!h.detalhe) return;
+    mats.forEach(m => {
+      const nomeBase = m.nome.split('—')[0].trim();
+      if (h.detalhe.startsWith(nomeBase)) estudadasSet.add(m.id);
+    });
+  });
+
+  const estudadas = estudadasSet.size;
+  const coberturaAtual = Math.round(estudadas / totalMaterias * 100);
+
+  // Ritmo: sessões por dia com base no histórico disponível (max 30 itens, janela de 14d)
+  const ritmoDia = histProg.length / 14;
+  const ritmoSemana = Math.round(ritmoDia * 7 * 10) / 10;
+
+  // Data da prova e projeção
+  const dataProva = prog.dataProva || '';
+  let diasRestantes = null;
+  let estimadoFinal = coberturaAtual;
+
+  if (dataProva) {
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    const prova = new Date(dataProva);
+    diasRestantes = Math.max(0, Math.round((prova - hoje) / 86400000));
+    // Cada sessão cobre ~40% de chance de ser uma matéria nova (restante são revisões)
+    const sessoesProjetadas = ritmoDia * diasRestantes;
+    const novasEstimadas = Math.min(totalMaterias - estudadas, Math.round(sessoesProjetadas * 0.4));
+    estimadoFinal = Math.min(100, Math.round((estudadas + novasEstimadas) / totalMaterias * 100));
+  }
+
+  return { totalMaterias, estudadas, coberturaAtual, diasRestantes, estimadoFinal, ritmoSemana, dataProva, progId };
+}
+
+function renderProntidao(containerId, progId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const dados = calcularProntidao(progId);
+  const prog = getPrograma(progId);
+  const isCacd = isConcursoId(progId);
+  const corAtual = isCacd ? 'prontidao-fill-atual' : 'prontidao-fill-atual-dir';
+  const corProj  = isCacd ? 'prontidao-fill-proj'  : 'prontidao-fill-proj-dir';
+
+  if (!dados) {
+    el.innerHTML = `<div class="prontidao-card"><div class="prontidao-vazio">
+      <p>Cadastre matérias no programa para ver a estimativa de prontidão.</p>
+      <button class="btn btn-secondary btn-sm" onclick="goTo('materias',null)">Gerenciar matérias</button>
+    </div></div>`;
+    return;
+  }
+
+  const { totalMaterias, estudadas, coberturaAtual, diasRestantes, estimadoFinal, ritmoSemana, dataProva } = dados;
+  const dataFmt = dataProva ? new Date(dataProva + 'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' }) : '';
+
+  if (!dataProva) {
+    el.innerHTML = `<div class="prontidao-card">
+      <div class="prontidao-header">
+        <div class="prontidao-titulo">Sem data da prova configurada</div>
+        <button class="btn btn-secondary btn-sm" onclick="abrirModalPrograma('${progId}')">Definir data</button>
+      </div>
+      <div class="prontidao-bar-row">
+        <div class="prontidao-bar-label">
+          <span>Cobertura atual</span>
+          <strong>${coberturaAtual}%</strong>
+        </div>
+        <div class="prontidao-bar-track">
+          <div class="prontidao-bar-fill ${corAtual}" style="width:${coberturaAtual}%"></div>
+        </div>
+      </div>
+      <div class="prontidao-stats">
+        <div class="prontidao-stat">Matérias estudadas: <strong>${estudadas}/${totalMaterias}</strong></div>
+        <div class="prontidao-stat">Ritmo: <strong>${ritmoSemana}/sem</strong></div>
+      </div>
+      <div class="prontidao-msg">Informe a data da prova em <em>Editar programa</em> para ver a estimativa de cobertura até o dia do exame.</div>
+    </div>`;
+    return;
+  }
+
+  const corDias = diasRestantes <= 30 ? 'var(--red)' : diasRestantes <= 90 ? 'var(--cacd)' : 'var(--green)';
+  let msg = '';
+  if (diasRestantes === 0) {
+    msg = 'A prova é hoje! Boa sorte!';
+  } else if (diasRestantes < 0) {
+    msg = 'A data da prova já passou. Atualize o programa com a nova data.';
+  } else if (estimadoFinal >= 90) {
+    msg = `Com seu ritmo atual de <em>${ritmoSemana} sessões/semana</em>, você deve cobrir cerca de <em>${estimadoFinal}%</em> do conteúdo até ${dataFmt}. Excelente!`;
+  } else if (estimadoFinal >= 60) {
+    msg = `Com seu ritmo atual de <em>${ritmoSemana} sessões/semana</em>, a estimativa é de <em>${estimadoFinal}%</em> de cobertura até ${dataFmt}. Tente aumentar o ritmo para cobrir mais matérias.`;
+  } else {
+    msg = `Com o ritmo atual de <em>${ritmoSemana} sessões/semana</em>, a estimativa é de apenas <em>${estimadoFinal}%</em> até ${dataFmt}. Aumente a frequência de estudos para melhorar a cobertura.`;
+  }
+
+  el.innerHTML = `<div class="prontidao-card">
+    <div class="prontidao-header">
+      <div>
+        <div class="prontidao-titulo">${prog ? prog.nome : ''}</div>
+        <div class="prontidao-dias"><strong style="color:${corDias}">${Math.max(0,diasRestantes)}</strong> dias até a prova · ${dataFmt}</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="abrirModalPrograma('${progId}')">Editar</button>
+    </div>
+    <div class="prontidao-bar-row">
+      <div class="prontidao-bar-label">
+        <span>Cobertura atual</span>
+        <strong>${coberturaAtual}%</strong>
+      </div>
+      <div class="prontidao-bar-track">
+        <div class="prontidao-bar-fill ${corAtual}" style="width:${coberturaAtual}%"></div>
+      </div>
+    </div>
+    <div class="prontidao-bar-row">
+      <div class="prontidao-bar-label">
+        <span>Estimativa na data da prova</span>
+        <strong>${estimadoFinal}%</strong>
+      </div>
+      <div class="prontidao-bar-track">
+        <div class="prontidao-bar-fill ${corProj}" style="width:${estimadoFinal}%"></div>
+      </div>
+    </div>
+    <div class="prontidao-stats">
+      <div class="prontidao-stat">Matérias estudadas: <strong>${estudadas}/${totalMaterias}</strong></div>
+      <div class="prontidao-stat">Ritmo: <strong>${ritmoSemana}/semana</strong></div>
+    </div>
+    <div class="prontidao-msg">${msg}</div>
+  </div>`;
 }
 
 // ============================================================
