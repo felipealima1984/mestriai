@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Estuda.AI — CACD & Direito</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c8a96e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Estuda.AI">
+<link rel="apple-touch-icon" href="icons/icon-192.svg">
+<meta name="description" content="Plataforma de estudos com IA para qualquer concurso ou matéria">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
@@ -4837,5 +4846,50 @@ function initNovosRecursos() {
 }
 
 </script>
+
+<!-- Service Worker Registration -->
+<script>
+(function() {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js')
+      .then(function(reg) {
+        // Notificar quando uma nova versão estiver disponível
+        reg.addEventListener('updatefound', function() {
+          var newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', function() {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Nova versão instalada — mostrar aviso discreto
+              var banner = document.getElementById('pwa-update-banner');
+              if (banner) banner.style.display = 'flex';
+            }
+          });
+        });
+      })
+      .catch(function(err) {
+        console.warn('[SW] Registro falhou:', err);
+      });
+
+    // Ao clicar em "Atualizar", força o novo SW a assumir e recarrega
+    var btn = document.getElementById('pwa-update-btn');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        navigator.serviceWorker.ready.then(function(reg) {
+          if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        });
+        window.location.reload();
+      });
+    }
+  });
+})();
+</script>
+
+<!-- Banner de atualização disponível -->
+<div id="pwa-update-banner" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.4);z-index:9999;align-items:center;gap:12px;font-size:13px;white-space:nowrap">
+  <span>Nova versão disponível</span>
+  <button id="pwa-update-btn" style="padding:5px 14px;background:var(--cacd);color:#0e0f14;border:none;border-radius:6px;font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer">Atualizar</button>
+  <button onclick="document.getElementById('pwa-update-banner').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px">×</button>
+</div>
 </body>
 </html>

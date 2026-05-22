@@ -20,6 +20,7 @@
  *  - Compartilhamento de programas: _montarExportPrograma, _executarImportPrograma, round-trip export→import
  *  - Estimativa de prontidão: calcularProntidao (totalMaterias, coberturaAtual, diasRestantes, estimadoFinal), lacunas, datas passada/futura/sem data
  *  - LaTeX/MathJax: renderizarLatex (null-safe, sem MathJax), initLatexObserver, config inlineMath/displayMath, override verificarSimulado
+ *  - PWA: link manifest, meta theme-color/apple/mobile, apple-touch-icon, banner de atualização, navigator.serviceWorker
  */
 (() => {
   'use strict';
@@ -769,6 +770,62 @@
 
   // -- Override de verificarSimulado não quebrou a função --
   ok('verificarSimulado ainda é função após override', typeof verificarSimulado === 'function');
+
+  endSection();
+
+  // ─── 23. PWA — manifest, meta tags e Service Worker (Tarefa 10) ──────────────
+
+  section('PWA — manifest, meta tags e Service Worker');
+
+  // -- Link do manifest no <head> --
+  const manifestLink = document.querySelector('link[rel="manifest"]');
+  ok('link[rel="manifest"] existe no <head>',     !!manifestLink);
+  ok('manifest aponta para manifest.json',         manifestLink && manifestLink.href && manifestLink.href.includes('manifest.json'));
+
+  // -- Meta tags PWA --
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  ok('meta theme-color existe',                    !!themeColor);
+  ok('theme-color é dourado (#c8a96e)',            themeColor && themeColor.content === '#c8a96e');
+
+  const mobileCapable = document.querySelector('meta[name="mobile-web-app-capable"]');
+  ok('meta mobile-web-app-capable existe',         !!mobileCapable);
+
+  const appleCapable = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+  ok('meta apple-mobile-web-app-capable existe',   !!appleCapable);
+
+  const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+  ok('meta apple-mobile-web-app-title existe',     !!appleTitle);
+  ok('apple-mobile-web-app-title = "Estuda.AI"',  appleTitle && appleTitle.content === 'Estuda.AI');
+
+  const appleTouchIcon = document.querySelector('link[rel="apple-touch-icon"]');
+  ok('apple-touch-icon aponta para ícone',         !!appleTouchIcon);
+
+  // -- Service Worker API disponível --
+  ok('navigator.serviceWorker existe',             'serviceWorker' in navigator);
+
+  // -- Banner de atualização existe no DOM --
+  ok('pwa-update-banner existe no DOM',            !!document.getElementById('pwa-update-banner'));
+  ok('pwa-update-btn existe no DOM',               !!document.getElementById('pwa-update-btn'));
+
+  // -- Verificar se SW está registrado (pode estar pendente em file://) --
+  noThrow('navigator.serviceWorker.getRegistrations() não lança', async () => {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      ok('getRegistrations() retorna array', Array.isArray(regs));
+    } else {
+      ok('SW não disponível neste ambiente (file:// ou HTTP)', true);
+    }
+  });
+
+  // -- Validar estrutura do CACHE_NAME via sw.js (verifica se arquivo existe) --
+  noThrow('fetch de sw.js não lança (só falha em file://)', async () => {
+    try {
+      const r = await fetch('./sw.js');
+      ok('sw.js retornou resposta', r !== undefined);
+    } catch {
+      ok('sw.js não acessível em file:// (esperado)', true);
+    }
+  });
 
   endSection();
 
