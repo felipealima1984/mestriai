@@ -234,17 +234,36 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Roadmap
 
-Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas.
+Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por atividade (~93h restantes).
 
-**Próximos passos prioritários:**
-- [ ] Integração Stripe real (substituir `ativarPremiumDemo()`)
-- [ ] Proxy API via Supabase Edge Function (chave da plataforma, não do usuário)
+**Estratégia:** construir valor primeiro, monetizar por último.  
+**Regra de trabalho:** cada item inicia em branch dedicada → atualiza README → merge na main → push.
+
+### Fase 1 — Fundação *(em andamento)*
+- [x] Otimizar `max_tokens` por tipo de chamada à API
+- [x] Atualizar README para v1.4
+- [ ] Fix bug `progId is not defined` ao duplicar aba de Matérias
+- [ ] Unificar rows de botões de programa no painel Matérias
+- [ ] Testes automatizados básicos (`tests.js`)
+
+### Fase 2 — Features diferenciadoras
+- [ ] Diagnóstico de lacunas de conhecimento (tópicos com mais erros no simulado)
+- [ ] Compartilhamento de programas de estudo (export/import JSON)
+- [ ] Estimativa de prontidão para a prova
+- [ ] Suporte a LaTeX/MathJax nas respostas
+
+### Fase 3 — Retenção e produto completo
 - [ ] PWA + Service Worker (instalação no celular, offline real)
 - [ ] Push notifications para revisão SM-2
 - [ ] Onboarding wizard para novos usuários
-- [ ] Exportação de historinhas e flashcards para PDF
 - [ ] Histórico de notas das redações com gráfico de evolução
-- [ ] Diagnóstico de lacunas de conhecimento (tópicos com mais erros)
+- [ ] Exportação de historinhas e flashcards para PDF
+- [ ] Estatísticas por matéria e por período
+
+### Fase 4 — Monetização *(cobrar por produto que já entrega valor)*
+- [ ] Integração Stripe real (substituir `ativarPremiumDemo()`)
+- [ ] Proxy API via Supabase Edge Function (chave da plataforma, não do usuário)
+- [ ] Rate limiting real no backend (Supabase)
 
 ---
 
