@@ -109,6 +109,42 @@ estuda-ai/
 
 ---
 
+## Testes automatizados
+
+O arquivo `tests.js` contém smoke tests executáveis diretamente no console do navegador — sem build, sem Node, sem dependências.
+
+**Como executar:**
+1. Abra o app no navegador (GitHub Pages ou `file://`)
+2. Abra o DevTools → Console (F12)
+3. Cole o conteúdo de `tests.js` e pressione Enter
+
+**Cobertura (80+ asserções, 19 seções):**
+
+| Seção | O que testa |
+|-------|-------------|
+| uid() | Unicidade e formato |
+| Helpers de programa | getPrograma, isConcurso, hasUnidades, getProgCor, getProgLabel |
+| Helpers de matéria | getMaterias, getTodasMaterias, getMateria, estrutura de tópicos |
+| Períodos | getPeriodo, salvarPeriodosLocal |
+| Persistência localStorage | salvarProgramas, salvarMaterias, salvarStats, salvarGamification, salvarBaralhos, salvarPlanoLocal |
+| SM-2 | Qualidades 0/1/2, transições de estado, caso "dominado", facilidade mínima |
+| Níveis (getNivel) | 4 faixas: Bronze/Prata/Ouro/Diamante, fronteiras exatas |
+| ganharXP | Incremento e persistência |
+| Streak | Primeiro dia, continuidade, reset após 2 dias sem estudo |
+| criarBaralho | Inicialização SM-2 dos cards, unicidade de ids |
+| Freemium | getMesAtual, isPremium, verificarResetMensal, contarGeracao, ativarPremiumDemo |
+| Histórico | adicionarHistorico, limite máximo de 30 entradas |
+| Contexto IA | getContextoMateria (com/sem tópicos, unidades), getEscopoUnidade |
+| Tema | setTheme (dark/gray/light) |
+| BUG FIX 1 | sincronizarPaineisModo sem ReferenceError |
+| BUG FIX 2 | prog-toggle oculto no painel Matérias |
+| switchMatTab | Sincronização de programaAtivoId, painel de períodos |
+| Renderizações | renderDashboard, renderCrudLista, renderMatTabs, renderBaralhos, renderXP, renderUsageBar |
+
+O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
+
+---
+
 ## Configuração do Supabase
 
 ### 1. Criar projeto
@@ -193,6 +229,11 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 
 ## Histórico de versões
 
+### v1.4.3 — Testes automatizados (tests.js v2)
+- `tests.js` reescrito com cobertura abrangente: 80+ asserções em 19 seções
+- Cobre: uid, helpers de programa/matéria, períodos, persistência localStorage, SM-2 (todos os fluxos de qualidade e transições de estado), gamificação (getNivel nos 4 níveis, ganharXP, criarBaralho, streak), freemium (contarGeracao, isPremium, verificarResetMensal, ativarPremiumDemo), histórico (limite 30), contexto IA (getContextoMateria, getEscopoUnidade), tema, navegação (BUG FIX 1 + 2), renderizações (smoke)
+- Runner com snapshot/restore de estado global: testes não poluem dados reais do usuário
+
 ### v1.4.2 — Unificação de botões de programa no painel Matérias
 - Eliminado o row duplicado de botões de programa: o `prog-toggle` da topbar é ocultado quando o usuário está no painel Matérias, pois o `mat-tabs-container` já cobre tanto a seleção de programa quanto a navegação para Períodos
 - `switchMatTab()` agora chama `setModo()` ao trocar de programa, mantendo o estado global (`programaAtivoId`) sincronizado com a aba selecionada
@@ -253,7 +294,7 @@ Ver [ROADMAP.md](ROADMAP.md) para a lista completa com estimativas de horas por 
 - [x] Atualizar README para v1.4
 - [x] Fix bug `progId is not defined` ao duplicar aba de Matérias
 - [x] Unificar rows de botões de programa no painel Matérias
-- [ ] Testes automatizados básicos (`tests.js`)
+- [x] Testes automatizados básicos (`tests.js`)
 
 ### Fase 2 — Features diferenciadoras
 - [ ] Diagnóstico de lacunas de conhecimento (tópicos com mais erros no simulado)
