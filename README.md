@@ -140,7 +140,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (173+ asserções, 25 seções):**
+**Cobertura (213+ asserções, 26 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -169,6 +169,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | PWA | link manifest, meta theme-color/apple/mobile, apple-touch-icon, banner de atualização, navigator.serviceWorker |
 | Logo imagem | #logo-sidebar e #logo-auth (img tags), atualizarLogoTema, troca de src por tema (dark/gray/light) |
 | Notificações SM-2 | contarCardsDue, atualizarBotaoNotif, ativar/desativar/toggle, verificarNotificacoes, #btn-notif |
+| Onboarding wizard | initOnboarding, onbSelecionarTipo, onbRenderStep, onbNext/Back/Skip/Fechar, elementos DOM do wizard |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 
@@ -257,6 +258,16 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 ---
 
 ## Histórico de versões
+
+### v1.12.0 — Onboarding wizard para novos usuários
+- Wizard de 3 passos exibido automaticamente na primeira abertura (sem `estuda_programas` no localStorage)
+- **Passo 1**: escolha do tipo de programa (Concurso / Graduação / Pós-graduação / Estudo livre) + nome + banca
+- **Passo 2**: nome da matéria + tópicos principais (um por linha, vão para `topicos.n1`)
+- **Passo 3**: confirmação do que foi criado + botão "Gerar primeira historinha" ou "Explorar sozinho"
+- Botão "Pular" disponível em qualquer passo; `estuda_onboarding_done` impede re-exibição
+- Programa criado é automaticamente definido como `programaAtivoId`; matéria vai direto para revisão
+- CSS responsivo: overlay `z-index:600`, card até 460px, scroll interno em telas pequenas
+- `tests.js` seção 26: 40 asserções cobrindo funções, DOM, seleção de tipo, render de steps e validação de campos
 
 ### v1.11.0 — Notificações locais para revisão SM-2
 - Botão "🔔 Notificações" na sidebar ativa/desativa lembretes de revisão SM-2

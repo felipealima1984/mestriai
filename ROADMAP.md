@@ -46,12 +46,12 @@
 | 10 | ~~PWA: `manifest.json` + Service Worker offline~~ | ~~6h~~ | **feito** | `manifest.json` + `sw.js` cache-first; ícones SVG 192/512 maskable; meta tags iOS; banner de nova versão |
 | 10b | ~~Logo com imagem (adaptação por tema)~~ | ~~2h~~ | **feito** | `<img>` nos lugares de "Estuda.AI" na sidebar e login; `atualizarLogoTema()` troca src dark↔light automaticamente |
 | 11 | ~~Push notifications para revisão SM-2~~ | ~~8h~~ | **feito** | Botão na sidebar; `contarCardsDue()` + `verificarNotificacoes()`; SW SHOW_NOTIFICATION + notificationclick; verificação horária |
-| 12 | Onboarding wizard para novos usuários | 6h | pendente | Wizard 3 passos: criar programa → matéria → primeira historinha |
+| 12 | ~~Onboarding wizard para novos usuários~~ | ~~6h~~ | **feito** | Wizard 3 passos: tipo+programa → matéria+tópicos → confirmação+CTA historinha; `estuda_onboarding_done` evita re-exibição |
 | 13 | Histórico de notas das redações com gráfico | 4h | pendente | Chart.js já disponível; salvar nota por redação no Supabase |
 | 14 | Exportação de historinhas e flashcards para PDF | 6h | pendente | `window.print()` + CSS de impressão ou jsPDF |
 | 15 | Estatísticas por matéria e por período | 4h | pendente | Breakdown de acertos/erros por matéria no simulado |
 
-**Subtotal Fase 3: 20h restantes**
+**Subtotal Fase 3: 14h restantes**
 
 ---
 
@@ -74,11 +74,11 @@
 |------|----------------:|---------------:|
 | Fase 1 — Fundação | **0h** | **concluída ✓** |
 | Fase 2 — Features diferenciadoras | **0h** | **concluída ✓** |
-| Fase 3 — Retenção e produto completo | 20h | restante |
+| Fase 3 — Retenção e produto completo | 14h | restante |
 | Fase 4 — Monetização | 28h | pendente |
-| **TOTAL RESTANTE** | **48h** | **~3,2 dias** |
+| **TOTAL RESTANTE** | **42h** | **~2,8 dias** |
 
-*(50h já entregues: token optimization + README + fix progId + unificação botões + testes + diagnóstico lacunas + compartilhamento de programas + prontidão para a prova + LaTeX/MathJax + PWA + logo imagem + notificações SM-2)*
+*(56h já entregues: token optimization + README + fix progId + unificação botões + testes + diagnóstico lacunas + compartilhamento de programas + prontidão para a prova + LaTeX/MathJax + PWA + logo imagem + notificações SM-2 + onboarding wizard)*
 
 ---
 

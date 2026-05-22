@@ -315,6 +315,20 @@ mjx-container svg { color: var(--text); }
 .periodo-sub{font-size:11px;color:var(--muted);margin-top:1px;}
 .periodo-actions{display:flex;gap:5px;flex-shrink:0;}
 .auth-screen{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;align-items:center;justify-content:center;}
+.onb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:600;display:flex;align-items:center;justify-content:center;}
+.onb-card{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:40px;width:460px;max-width:94vw;max-height:90vh;overflow-y:auto;}
+.onb-steps{display:flex;gap:10px;justify-content:center;margin-bottom:32px;}
+.onb-dot{width:10px;height:10px;border-radius:50%;background:var(--border2);transition:background .25s;}
+.onb-dot.ativo{background:var(--cacd);}
+.onb-titulo{font-size:22px;font-weight:800;margin-bottom:6px;}
+.onb-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6;}
+.onb-nav{display:flex;gap:8px;margin-top:22px;}
+.onb-skip{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:8px;font-family:var(--font-body);text-decoration:underline;display:block;margin:10px auto 0;}
+.onb-tipo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;}
+.onb-tipo-btn{padding:12px 8px;border:2px solid var(--border2);border-radius:10px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:600;transition:all .15s;text-align:center;}
+.onb-tipo-btn.sel{border-color:var(--cacd);color:var(--cacd);background:rgba(200,169,110,.08);}
+.onb-check{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(200,169,110,.07);border:1px solid rgba(200,169,110,.2);border-radius:10px;margin-bottom:10px;font-size:13px;}
+.onb-check-icon{font-size:20px;flex-shrink:0;}
 .auth-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:36px;width:380px;max-width:92vw;}
 .auth-logo{font-family:var(--font-head);font-size:24px;font-weight:800;margin-bottom:4px;}
 .auth-logo span{color:var(--cacd);}
@@ -541,6 +555,78 @@ mjx-container svg { color: var(--text); }
     <button class="btn btn-primary-cacd" style="width:100%;margin-top:4px" onclick="submitAuth()" id="btn-auth">Entrar</button>
     <div style="margin-top:14px;text-align:center">
       <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--font-body)" onclick="usarOffline()">Usar sem login (modo offline)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING WIZARD -->
+<div class="onb-overlay" id="onb-overlay" style="display:none">
+  <div class="onb-card">
+    <div class="onb-steps">
+      <div class="onb-dot ativo" id="onb-dot-1"></div>
+      <div class="onb-dot" id="onb-dot-2"></div>
+      <div class="onb-dot" id="onb-dot-3"></div>
+    </div>
+
+    <!-- PASSO 1 — Criar programa -->
+    <div id="onb-step-1">
+      <div class="onb-titulo">Bem-vindo ao Estuda.AI!</div>
+      <div class="onb-sub">Vamos configurar seu primeiro programa de estudos em 3 passos rápidos.</div>
+      <div class="onb-tipo-grid">
+        <button class="onb-tipo-btn sel" id="onbt-concurso"    onclick="onbSelecionarTipo('concurso')">🏆 Concurso</button>
+        <button class="onb-tipo-btn"     id="onbt-graduacao"   onclick="onbSelecionarTipo('graduacao')">🎓 Graduação</button>
+        <button class="onb-tipo-btn"     id="onbt-posgraduacao" onclick="onbSelecionarTipo('posgraduacao')">📚 Pós-graduação</button>
+        <button class="onb-tipo-btn"     id="onbt-livre"       onclick="onbSelecionarTipo('livre')">✏️ Estudo livre</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nome do programa *</label>
+        <input class="form-input" id="onb-prog-nome" placeholder="Ex: CACD 2026, OAB, Direito Civil..." onkeydown="if(event.key==='Enter')onbNext()"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Banca / Instituição</label>
+        <input class="form-input" id="onb-prog-inst" placeholder="Ex: CESPE, FCC, IBFC..."/>
+      </div>
+      <div class="onb-nav">
+        <button class="btn btn-primary-cacd" style="flex:1" onclick="onbNext()">Próximo →</button>
+      </div>
+      <button class="onb-skip" onclick="onbSkip()">Pular configuração inicial</button>
+    </div>
+
+    <!-- PASSO 2 — Criar matéria -->
+    <div id="onb-step-2" style="display:none">
+      <div class="onb-titulo">Adicione sua primeira matéria</div>
+      <div class="onb-sub">Qual disciplina você quer estudar em <strong id="onb-prog-nome-display"></strong>?</div>
+      <div class="form-group">
+        <label class="form-label">Nome da matéria *</label>
+        <input class="form-input" id="onb-mat-nome" placeholder="Ex: Direito Constitucional, História, Matemática..." onkeydown="if(event.key==='Enter')onbNext()"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tópicos principais <span style="font-weight:400;font-size:11px">(opcional — um por linha)</span></label>
+        <textarea class="form-input" id="onb-mat-topicos" rows="4" placeholder="Ex:&#10;Princípios constitucionais&#10;Direitos fundamentais&#10;Organização do Estado" style="resize:vertical"></textarea>
+      </div>
+      <div class="onb-nav">
+        <button class="btn btn-secondary" onclick="onbBack()">← Voltar</button>
+        <button class="btn btn-primary-cacd" style="flex:1" onclick="onbNext()">Próximo →</button>
+      </div>
+      <button class="onb-skip" onclick="onbPularMateria()">Adicionar matéria depois</button>
+    </div>
+
+    <!-- PASSO 3 — Confirmação -->
+    <div id="onb-step-3" style="display:none">
+      <div class="onb-titulo">Tudo pronto!</div>
+      <div class="onb-sub">Seu ambiente foi configurado. Aqui está o que foi criado:</div>
+      <div class="onb-check">
+        <span class="onb-check-icon">✅</span>
+        <span id="onb-check-prog-txt"></span>
+      </div>
+      <div class="onb-check" id="onb-check-mat" style="display:none">
+        <span class="onb-check-icon">📖</span>
+        <span id="onb-check-mat-txt"></span>
+      </div>
+      <div class="onb-nav" style="flex-direction:column;gap:10px;margin-top:28px">
+        <button class="btn btn-primary-cacd" onclick="onbGerarHistorinha()">✦ Gerar minha primeira historinha</button>
+        <button class="btn btn-secondary" onclick="onbFechar()">Explorar por conta própria</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4834,6 +4920,112 @@ function _executarImportPrograma(data) {
 }
 
 // ============================================================
+// ONBOARDING WIZARD
+// ============================================================
+let onbTipo = 'concurso';
+let onbProgIdCriado = null;
+let onbMatIdCriado  = null;
+
+function initOnboarding() {
+  if (localStorage.getItem('estuda_onboarding_done')) return;
+  if (localStorage.getItem('estuda_programas')) return; // usuário existente com dados próprios
+  document.getElementById('onb-overlay').style.display = 'flex';
+}
+
+function onbSelecionarTipo(tipo) {
+  onbTipo = tipo;
+  ['concurso','graduacao','posgraduacao','livre'].forEach(t =>
+    document.getElementById('onbt-'+t).classList.toggle('sel', t === tipo)
+  );
+}
+
+function onbRenderStep(n) {
+  [1, 2, 3].forEach(i => {
+    document.getElementById('onb-step-'+i).style.display = i === n ? 'block' : 'none';
+    document.getElementById('onb-dot-'+i).classList.toggle('ativo', i <= n);
+  });
+}
+
+function onbNext() {
+  const s1 = document.getElementById('onb-step-1');
+  const s2 = document.getElementById('onb-step-2');
+
+  if (s1.style.display !== 'none') {
+    // Passo 1 → validar e criar programa
+    const nome = document.getElementById('onb-prog-nome').value.trim();
+    if (!nome) { toast('Informe o nome do programa'); document.getElementById('onb-prog-nome').focus(); return; }
+    const inst = document.getElementById('onb-prog-inst').value.trim();
+    const id = uid();
+    programas.push({ id, nome, tipo: onbTipo, instituicao: inst, ano: '', dataProva: '', ativo: true });
+    programaAtivoId = id; modo = id; matTabAtual = id; simTabAtual = id;
+    salvarProgramas();
+    renderToggleProgramas();
+    onbProgIdCriado = id;
+    document.getElementById('onb-prog-nome-display').textContent = nome;
+    onbRenderStep(2);
+    setTimeout(() => document.getElementById('onb-mat-nome').focus(), 80);
+
+  } else if (s2.style.display !== 'none') {
+    // Passo 2 → validar e criar matéria
+    const nome = document.getElementById('onb-mat-nome').value.trim();
+    if (!nome) { toast('Informe o nome da matéria'); document.getElementById('onb-mat-nome').focus(); return; }
+    const raw = document.getElementById('onb-mat-topicos').value;
+    const n1  = raw.split('\n').map(t => t.trim()).filter(Boolean);
+    const id  = uid();
+    materias.push({ id, nome, programaId: onbProgIdCriado, frente: onbProgIdCriado, periodoId: null, topicos: { n1, n2: [], n3: [] } });
+    salvarMaterias();
+    preencherSelectMaterias();
+    renderCrudLista();
+    onbMatIdCriado = id;
+    _onbMostrarPasso3();
+  }
+}
+
+function onbBack() { onbRenderStep(1); }
+
+function onbPularMateria() {
+  onbMatIdCriado = null;
+  _onbMostrarPasso3();
+}
+
+function _onbMostrarPasso3() {
+  const progNome = (getPrograma(onbProgIdCriado) || {}).nome || '';
+  document.getElementById('onb-check-prog-txt').textContent = 'Programa "' + progNome + '" criado';
+  const checkMat = document.getElementById('onb-check-mat');
+  if (onbMatIdCriado) {
+    const matNome = (getMateria(onbMatIdCriado) || {}).nome || '';
+    document.getElementById('onb-check-mat-txt').textContent = 'Matéria "' + matNome + '" adicionada com ' + ((getMateria(onbMatIdCriado).topicos.n1 || []).length) + ' tópico(s)';
+    checkMat.style.display = 'flex';
+  } else {
+    checkMat.style.display = 'none';
+  }
+  onbRenderStep(3);
+}
+
+function onbSkip() {
+  localStorage.setItem('estuda_onboarding_done', '1');
+  document.getElementById('onb-overlay').style.display = 'none';
+}
+
+function onbFechar() {
+  localStorage.setItem('estuda_onboarding_done', '1');
+  document.getElementById('onb-overlay').style.display = 'none';
+  renderDashboard();
+}
+
+function onbGerarHistorinha() {
+  localStorage.setItem('estuda_onboarding_done', '1');
+  document.getElementById('onb-overlay').style.display = 'none';
+  goTo('historinha', null);
+  if (onbMatIdCriado) {
+    setTimeout(() => {
+      const sel = document.getElementById('cacd-materia');
+      if (sel) sel.value = onbMatIdCriado;
+    }, 100);
+  }
+}
+
+// ============================================================
 // NOTIFICAÇÕES SM-2
 // ============================================================
 
@@ -4944,6 +5136,8 @@ function initNovosRecursos() {
   atualizarBotaoNotif();
   verificarNotificacoes(false);
   iniciarVerificacaoHoraria();
+  // Onboarding para novos usuários
+  initOnboarding();
 }
 
 </script>
