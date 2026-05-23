@@ -40,6 +40,9 @@ Questões de múltipla escolha com gabarito comentado. Suporta três tipos de ar
 ### Redação CACD
 Geração de tema dissertativo com instruções e critérios. Aceita a redação do usuário e devolve correção com notas em cinco critérios: argumentação, conhecimento de política internacional, estrutura dissertativa, coesão e perfil diplomático.
 
+### Histórico de redações com gráfico
+Todas as redações corrigidas são salvas automaticamente na aba **Histórico** do painel de redação. Um gráfico de linha (Chart.js) exibe a evolução das notas ao longo do tempo. A lista mostra nota, tema e data de cada redação — clique em qualquer entrada para rever o texto e a correção da IA. Cada item tem botão de exclusão individual. O histórico sincroniza com o Supabase quando o usuário está autenticado.
+
 ### Material de Estudo (PDF / Texto)
 Upload de PDF ou texto colado manualmente. Gera à escolha:
 - **Historinha** — resumo narrativo para memorização
@@ -140,7 +143,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (213+ asserções, 26 seções):**
+**Cobertura (250+ asserções, 27 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -170,6 +173,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | Logo imagem | #logo-sidebar e #logo-auth (img tags), atualizarLogoTema, troca de src por tema (dark/gray/light) |
 | Notificações SM-2 | contarCardsDue, atualizarBotaoNotif, ativar/desativar/toggle, verificarNotificacoes, #btn-notif |
 | Onboarding wizard | initOnboarding, onbSelecionarTipo, onbRenderStep, onbNext/Back/Skip/Fechar, elementos DOM do wizard |
+| Histórico de redações | extrairNotaRedacao (padrões), renderHistoricoRedacoes, renderGraficoRedacoes, switchRedTab, verRedacaoHistorico, excluirRedacaoHistorico, salvarRedacoesHist, syncRedacoesHistItem, elementos DOM |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 

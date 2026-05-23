@@ -394,6 +394,8 @@ mjx-container svg { color: var(--text); }
 .red-hist-nota{font-family:var(--font-head);font-size:22px;font-weight:800;line-height:1;}
 .red-hist-tema{font-size:13px;font-weight:500;flex:1;}
 .red-hist-data{font-size:11px;color:var(--muted);}
+.red-hist-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;line-height:1;transition:color .15s;}
+.red-hist-del:hover{color:var(--red,#e57373);}
 
 /* GRÁFICOS */
 .chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;}
@@ -3903,10 +3905,17 @@ async function carregarDoSupabase() {
       if (pref.anthropic_key) { apiKey = pref.anthropic_key; localStorage.setItem('estuda_api_key', apiKey); }
       if (pref.programa_ativo_id) { programaAtivoId = pref.programa_ativo_id; modo = programaAtivoId; }
     }
-    // Materiais salvos
-    const { data: mSalvos } = await sb.from('materiais_salvos').select('*').eq('user_id', currentUser.id).order('criado_em', { ascending: false }).limit(50);
+    // Materiais salvos (inclui histórico de redações)
+    const { data: mSalvos } = await sb.from('materiais_salvos').select('*').eq('user_id', currentUser.id).order('criado_em', { ascending: false }).limit(100);
     if (mSalvos) {
-      materiaisSalvos = mSalvos.map(m => ({
+      // Extrair histórico de redações
+      const redHist = mSalvos.filter(m => m.tipo === 'redacao_hist');
+      if (redHist.length) {
+        redacoesHist = redHist.map(m => { try { return JSON.parse(m.conteudo_raw); } catch(_) { return null; } }).filter(Boolean);
+        localStorage.setItem('estuda_redacoes_hist', JSON.stringify(redacoesHist));
+      }
+      // Materiais normais (excluindo redações do histórico)
+      materiaisSalvos = mSalvos.filter(m => m.tipo !== 'redacao_hist').map(m => ({
         tipo: m.tipo,
         frente: m.programa_id || m.frente,
         programaId: m.programa_id || m.frente,
@@ -4332,20 +4341,21 @@ function extrairNotaRedacao(texto) {
 const _origCorrigirRedacao2 = corrigirRedacao;
 corrigirRedacao = async function() {
   await _origCorrigirRedacao2();
-  // Salvar após correção
   const txt = document.getElementById('result-red-text')?.textContent;
   const tema = document.getElementById('tema-titulo')?.textContent;
   if (txt && txt.length > 50) {
     const nota = extrairNotaRedacao(txt);
-    redacoesHist.unshift({
+    const r = {
       tema: tema || 'Sem tema',
       nota: nota,
       texto: document.getElementById('red-texto')?.value || '',
       correcao: txt,
       data: new Date().toISOString()
-    });
+    };
+    redacoesHist.unshift(r);
     if (redacoesHist.length > 50) redacoesHist.pop();
     salvarRedacoesHist();
+    syncRedacoesHistItem(r);
   }
 };
 
@@ -4356,15 +4366,15 @@ function renderHistoricoRedacoes() {
   if (!redacoesHist.length) { lista.innerHTML=''; vazio.style.display='block'; renderGraficoRedacoes([]); return; }
   vazio.style.display='none';
   lista.innerHTML = redacoesHist.map((r,i) => {
-    const cor = !r.nota ? 'var(--muted)' : r.nota >= 7 ? 'var(--green)' : r.nota >= 5 ? 'var(--cacd)' : 'var(--red)';
+    const cor = !r.nota ? 'var(--muted)' : r.nota >= 7 ? 'var(--green)' : r.nota >= 5 ? 'var(--cacd)' : 'var(--red,#e57373)';
     return `<div class="red-hist-item" onclick="verRedacaoHistorico(${i})">
       <div style="display:flex;align-items:center;gap:14px">
-        <div class="red-hist-nota" style="color:${cor}">${r.nota ? r.nota.toFixed(1) : '—'}</div>
+        <div class="red-hist-nota" style="color:${cor}">${r.nota != null ? r.nota.toFixed(1) : '—'}</div>
         <div style="flex:1">
           <div class="red-hist-tema">${r.tema}</div>
           <div class="red-hist-data">${new Date(r.data).toLocaleDateString('pt-BR')}</div>
         </div>
-        <span style="color:var(--muted);font-size:12px">▶</span>
+        <button class="red-hist-del" title="Excluir" onclick="excluirRedacaoHistorico(event,${i})">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -4414,8 +4424,29 @@ function verRedacaoHistorico(i) {
   const r = redacoesHist[i];
   document.getElementById('result-red-text').textContent = r.correcao;
   document.getElementById('result-redacao').classList.add('visible');
+  if (r.tema) document.getElementById('tema-titulo').textContent = r.tema;
+  if (r.texto) document.getElementById('red-texto').value = r.texto;
   switchRedTab('nova');
   document.getElementById('result-redacao').scrollIntoView({behavior:'smooth'});
+}
+
+function excluirRedacaoHistorico(e, i) {
+  e.stopPropagation();
+  redacoesHist.splice(i, 1);
+  salvarRedacoesHist();
+  renderHistoricoRedacoes();
+}
+
+async function syncRedacoesHistItem(r) {
+  if (!sb || !currentUser || !isOnline) return;
+  try {
+    await sb.from('materiais_salvos').insert({
+      user_id: currentUser.id,
+      tipo: 'redacao_hist',
+      frente: programaAtivoId || null,
+      conteudo_raw: JSON.stringify(r)
+    });
+  } catch(e) {}
 }
 
 // ============================================================
