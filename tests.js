@@ -26,6 +26,7 @@
  *  - Onboarding wizard: initOnboarding, onbSelecionarTipo, onbRenderStep, onbNext/Back/Skip/Fechar, elementos DOM do wizard
  *  - Histórico de redações: extrairNotaRedacao, renderHistoricoRedacoes, renderGraficoRedacoes, switchRedTab, verRedacaoHistorico, excluirRedacaoHistorico, syncRedacoesHistItem, elementos DOM
  *  - Exportação PDF: exportarParaPDF, _buildExportContent (historinha/flashcards/questoes/fallback), exportarHistorihaAtual, exportarMaterialAtual, exportarMaterialSalvo, #print-area, botões PDF
+ *  - Estatísticas por matéria e período: renderEstatisticasMateria, renderEstatisticasPeriodo, renderGraficoEstatMat, DOM, integração com lacunas e períodos
  */
 (() => {
   'use strict';
@@ -1268,6 +1269,154 @@
   noThrow('exportarMaterialSalvo(999) índice inválido não lança exceção', () => {
     exportarMaterialSalvo(999);
     ok('índice inválido não lança exceção', true);
+  });
+
+  endSection();
+
+  // ─── SEÇÃO 29 — Estatísticas por Matéria e Período ──────────────────────────
+
+  section('29 — Estatísticas por Matéria e Período');
+
+  // Funções existem
+  ok('renderEstatisticasMateria é função',  typeof renderEstatisticasMateria === 'function');
+  ok('renderEstatisticasPeriodo é função',  typeof renderEstatisticasPeriodo === 'function');
+  ok('renderGraficoEstatMat é função',      typeof renderGraficoEstatMat === 'function');
+  ok('chartEstatInst é variável global',    typeof chartEstatInst !== 'undefined');
+
+  // Elementos DOM existem
+  ok('#stats-mat-container existe',   !!document.getElementById('stats-mat-container'));
+  ok('#stats-per-container existe',   !!document.getElementById('stats-per-container'));
+  ok('#st-stats-per existe',          !!document.getElementById('st-stats-per'));
+  ok('panel-progresso tem seção Estatísticas por matéria',
+    !!Array.from(document.querySelectorAll('#panel-progresso .section-title'))
+           .find(el => el.textContent.includes('Estatísticas por matéria')));
+
+  // renderEstatisticasMateria — sem dados mostra mensagem
+  noThrow('renderEstatisticasMateria() sem simulados mostra mensagem', () => {
+    const prevLacunas = JSON.parse(JSON.stringify(lacunas));
+    const prevMats = [...materias];
+    materias = [{ id: 'mat-test-stats', nome: 'Matéria Teste', programaId: programaAtivoId, frente: programaAtivoId, periodoId: null, topicos: { n1: [], n2: [], n3: [] } }];
+    // sem entrada em lacunas
+    const prevKey = lacunas['mat-test-stats'];
+    delete lacunas['mat-test-stats'];
+    renderEstatisticasMateria();
+    const el = document.getElementById('stats-mat-container');
+    ok('mensagem de estado vazio exibida', el.textContent.includes('simulados'));
+    // restaurar
+    materias = prevMats;
+    Object.assign(lacunas, prevLacunas);
+  });
+
+  // renderEstatisticasMateria — com dados renderiza rows
+  noThrow('renderEstatisticasMateria() com dados renderiza rows', () => {
+    const prevMats = [...materias];
+    const prevLacunas = JSON.parse(JSON.stringify(lacunas));
+    materias = [
+      { id: 'mts-a', nome: 'DIP', programaId: programaAtivoId, frente: programaAtivoId, periodoId: null, topicos:{n1:[],n2:[],n3:[]} },
+      { id: 'mts-b', nome: 'Direito Civil', programaId: programaAtivoId, frente: programaAtivoId, periodoId: null, topicos:{n1:[],n2:[],n3:[]} },
+    ];
+    lacunas['mts-a'] = { nome: 'DIP', acertos: 8, erros: 2, programaId: programaAtivoId };
+    lacunas['mts-b'] = { nome: 'Direito Civil', acertos: 3, erros: 7, programaId: programaAtivoId };
+    renderEstatisticasMateria();
+    const el = document.getElementById('stats-mat-container');
+    const rows = el.querySelectorAll('.stats-mat-row');
+    ok('2 rows renderizadas', rows.length === 2);
+    ok('texto DIP aparece', el.textContent.includes('DIP'));
+    ok('texto Direito Civil aparece', el.textContent.includes('Direito Civil'));
+    ok('acertos visíveis (✓)', el.textContent.includes('✓'));
+    ok('erros visíveis (✗)', el.textContent.includes('✗'));
+    ok('taxa 80% exibida para DIP', el.textContent.includes('80%'));
+    ok('taxa 30% exibida para Direito Civil', el.textContent.includes('30%'));
+    ok('primeira row é a de maior atividade (DIP: 10 total)', rows[0].textContent.includes('DIP'));
+    // Verificar barra de acerto por CSS inline
+    const primeiraBar = rows[0].querySelector('.stats-mat-bar');
+    ok('barra presente na primeira row', !!primeiraBar);
+    ok('width da barra de DIP é 80%', primeiraBar && primeiraBar.style.width === '80%');
+    // restaurar
+    materias = prevMats;
+    Object.keys(prevLacunas).forEach(k => lacunas[k] = prevLacunas[k]);
+    delete lacunas['mts-a']; delete lacunas['mts-b'];
+  });
+
+  // renderEstatisticasMateria — taxa de acerto 0% (todos erros)
+  noThrow('renderEstatisticasMateria() taxa 0% (todos erros)', () => {
+    const prevMats = [...materias];
+    const prevLacunas = JSON.parse(JSON.stringify(lacunas));
+    materias = [{ id: 'mts-z', nome: 'Tudo Errado', programaId: programaAtivoId, frente: programaAtivoId, periodoId: null, topicos:{n1:[],n2:[],n3:[]} }];
+    lacunas['mts-z'] = { nome: 'Tudo Errado', acertos: 0, erros: 5, programaId: programaAtivoId };
+    renderEstatisticasMateria();
+    const el = document.getElementById('stats-mat-container');
+    ok('taxa 0% exibida', el.textContent.includes('0%'));
+    materias = prevMats;
+    Object.assign(lacunas, prevLacunas);
+    delete lacunas['mts-z'];
+  });
+
+  // renderEstatisticasPeriodo — sem períodos oculta seções
+  noThrow('renderEstatisticasPeriodo() sem períodos oculta elementos', () => {
+    const prevPeriodos = [...periodos];
+    periodos = [];
+    renderEstatisticasPeriodo();
+    ok('#st-stats-per oculto sem períodos',    document.getElementById('st-stats-per').style.display === 'none');
+    ok('#stats-per-container oculto sem períodos', document.getElementById('stats-per-container').style.display === 'none');
+    periodos = prevPeriodos;
+  });
+
+  // renderEstatisticasPeriodo — com períodos vinculados ao programa ativo
+  noThrow('renderEstatisticasPeriodo() com períodos mostra breakdown', () => {
+    const prevPeriodos = [...periodos];
+    const prevMats = [...materias];
+    const prevLacunas = JSON.parse(JSON.stringify(lacunas));
+    const pid = 'per-test-' + Date.now();
+    periodos = [{ id: pid, numero: 1, descricao: 'Introdução', ativo: true }];
+    materias = [{ id: 'mts-per', nome: 'Fundamentos', programaId: programaAtivoId, frente: programaAtivoId, periodoId: pid, topicos:{n1:[],n2:[],n3:[]} }];
+    lacunas['mts-per'] = { nome: 'Fundamentos', acertos: 6, erros: 4, programaId: programaAtivoId };
+    renderEstatisticasPeriodo();
+    const titleEl = document.getElementById('st-stats-per');
+    const el = document.getElementById('stats-per-container');
+    ok('#st-stats-per visível com períodos',    titleEl.style.display !== 'none');
+    ok('#stats-per-container visível com períodos', el.style.display !== 'none');
+    ok('1º Período aparece', el.textContent.includes('1º Período'));
+    ok('Introdução aparece', el.textContent.includes('Introdução'));
+    ok('1 matéria aparece',  el.textContent.includes('1 matéria'));
+    ok('taxa 60% exibida',   el.textContent.includes('60%'));
+    // restaurar
+    periodos = prevPeriodos;
+    materias = prevMats;
+    Object.assign(lacunas, prevLacunas);
+    delete lacunas['mts-per'];
+    renderEstatisticasPeriodo();
+  });
+
+  // renderEstatisticasPeriodo — período sem simulados mostra "Sem simulados"
+  noThrow('renderEstatisticasPeriodo() período sem simulados mostra aviso', () => {
+    const prevPeriodos = [...periodos];
+    const prevMats = [...materias];
+    const pid2 = 'per-test2-' + Date.now();
+    periodos = [{ id: pid2, numero: 2, descricao: '', ativo: false }];
+    materias = [{ id: 'mts-empty', nome: 'Vazia', programaId: programaAtivoId, frente: programaAtivoId, periodoId: pid2, topicos:{n1:[],n2:[],n3:[]} }];
+    // sem lacunas para mts-empty
+    renderEstatisticasPeriodo();
+    const el = document.getElementById('stats-per-container');
+    ok('"Sem simulados" exibido para período sem atividade', el.textContent.includes('Sem simulados'));
+    periodos = prevPeriodos;
+    materias = prevMats;
+    renderEstatisticasPeriodo();
+  });
+
+  // renderGraficoEstatMat — sem dados não lança exceção
+  noThrow('renderGraficoEstatMat() sem dados não lança exceção', () => {
+    const prevMats = [...materias];
+    materias = [];
+    renderGraficoEstatMat();
+    ok('sem dados — sem exceção', true);
+    materias = prevMats;
+  });
+
+  // renderProgresso integra as novas funções — não lança exceção
+  noThrow('renderProgresso() chama renderEstatisticasMateria + renderEstatisticasPeriodo sem erro', () => {
+    renderProgresso();
+    ok('renderProgresso() completou sem exceção', true);
   });
 
   endSection();

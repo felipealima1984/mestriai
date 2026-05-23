@@ -49,9 +49,9 @@
 | 12 | ~~Onboarding wizard para novos usuários~~ | ~~6h~~ | **feito** | Wizard 3 passos: tipo+programa → matéria+tópicos → confirmação+CTA historinha; `estuda_onboarding_done` evita re-exibição |
 | 13 | ~~Histórico de notas das redações com gráfico~~ | ~~4h~~ | **feito** | Aba Histórico no painel de redação; gráfico de linha (Chart.js) de evolução; lista com nota/tema/data; botão de excluir; sync Supabase via `materiais_salvos` (tipo `redacao_hist`); testes seção 27 |
 | 14 | ~~Exportação de historinhas e flashcards para PDF~~ | ~~6h~~ | **feito** | `window.print()` + CSS `@media print`; `#print-area` + `_buildExportContent`; botão 📄 PDF em result boxes e em cada item salvo; layout: cabeçalho, 2 colunas para flashcards, questões numeradas com gabarito; testes seção 28 |
-| 15 | Estatísticas por matéria e por período | 4h | pendente | Breakdown de acertos/erros por matéria no simulado |
+| 15 | ~~Estatísticas por matéria e por período~~ | ~~4h~~ | **feito** | `renderEstatisticasMateria` (rows + barras + taxa colorida), `renderEstatisticasPeriodo` (agregação por período, condicional), `renderGraficoEstatMat` (bar chart acertos vs erros, top 8 matérias), integrado em `renderProgresso`; testes seção 29 |
 
-**Subtotal Fase 3: 4h restantes**
+**Subtotal Fase 3: 0h restantes — Fase 3 concluída ✓**
 
 ---
 
@@ -74,11 +74,11 @@
 |------|----------------:|---------------:|
 | Fase 1 — Fundação | **0h** | **concluída ✓** |
 | Fase 2 — Features diferenciadoras | **0h** | **concluída ✓** |
-| Fase 3 — Retenção e produto completo | 4h | restante |
+| Fase 3 — Retenção e produto completo | **0h** | **concluída ✓** |
 | Fase 4 — Monetização | 28h | pendente |
-| **TOTAL RESTANTE** | **32h** | **~2,1 dias** |
+| **TOTAL RESTANTE** | **28h** | **~1,9 dias** |
 
-*(66h já entregues: token optimization + README + fix progId + unificação botões + testes + diagnóstico lacunas + compartilhamento de programas + prontidão para a prova + LaTeX/MathJax + PWA + logo imagem + notificações SM-2 + onboarding wizard + histórico de redações com gráfico + exportação para PDF)*
+*(70h já entregues: token optimization + README + fix progId + unificação botões + testes + diagnóstico lacunas + compartilhamento de programas + prontidão para a prova + LaTeX/MathJax + PWA + logo imagem + notificações SM-2 + onboarding wizard + histórico de redações com gráfico + exportação para PDF + estatísticas por matéria e período)*
 
 ---
 
@@ -95,4 +95,4 @@
 
 ---
 
-*Atualizado em 23/05/2026 (v1.14.0) — estratégia invertida: valor antes de monetização.*
+*Atualizado em 23/05/2026 (v1.15.0) — Fase 3 concluída. Próximo: Fase 4 (monetização).*
