@@ -43,6 +43,9 @@ Geração de tema dissertativo com instruções e critérios. Aceita a redação
 ### Histórico de redações com gráfico
 Todas as redações corrigidas são salvas automaticamente na aba **Histórico** do painel de redação. Um gráfico de linha (Chart.js) exibe a evolução das notas ao longo do tempo. A lista mostra nota, tema e data de cada redação — clique em qualquer entrada para rever o texto e a correção da IA. Cada item tem botão de exclusão individual. O histórico sincroniza com o Supabase quando o usuário está autenticado.
 
+### Exportação para PDF
+Historinhas e flashcards (incluindo questões) podem ser exportados como PDF diretamente pelo navegador — sem bibliotecas externas, via `window.print()` com CSS de impressão dedicado. Um botão **📄 PDF** aparece no cabeçalho de cada resultado gerado (Historinha e Material) e em cada item salvo em Materiais Salvos. O layout de impressão inclui cabeçalho com título e data, grelha de 2 colunas para flashcards (frente e verso visíveis), lista numerada para questões com gabarito, e rodapé de marca.
+
 ### Material de Estudo (PDF / Texto)
 Upload de PDF ou texto colado manualmente. Gera à escolha:
 - **Historinha** — resumo narrativo para memorização
@@ -143,7 +146,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (250+ asserções, 27 seções):**
+**Cobertura (290+ asserções, 28 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -174,6 +177,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | Notificações SM-2 | contarCardsDue, atualizarBotaoNotif, ativar/desativar/toggle, verificarNotificacoes, #btn-notif |
 | Onboarding wizard | initOnboarding, onbSelecionarTipo, onbRenderStep, onbNext/Back/Skip/Fechar, elementos DOM do wizard |
 | Histórico de redações | extrairNotaRedacao (padrões), renderHistoricoRedacoes, renderGraficoRedacoes, switchRedTab, verRedacaoHistorico, excluirRedacaoHistorico, salvarRedacoesHist, syncRedacoesHistItem, elementos DOM |
+| Exportação PDF | exportarParaPDF, _buildExportContent (historinha/flashcards/questoes/fallback), exportarHistorihaAtual, exportarMaterialAtual, exportarMaterialSalvo, #print-area, botões PDF em result boxes e materiais salvos |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 

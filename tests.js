@@ -25,6 +25,7 @@
  *  - Notificações SM-2: contarCardsDue, atualizarBotaoNotif, ativar/desativar/toggle, verificarNotificacoes, #btn-notif
  *  - Onboarding wizard: initOnboarding, onbSelecionarTipo, onbRenderStep, onbNext/Back/Skip/Fechar, elementos DOM do wizard
  *  - Histórico de redações: extrairNotaRedacao, renderHistoricoRedacoes, renderGraficoRedacoes, switchRedTab, verRedacaoHistorico, excluirRedacaoHistorico, syncRedacoesHistItem, elementos DOM
+ *  - Exportação PDF: exportarParaPDF, _buildExportContent (historinha/flashcards/questoes/fallback), exportarHistorihaAtual, exportarMaterialAtual, exportarMaterialSalvo, #print-area, botões PDF
  */
 (() => {
   'use strict';
@@ -1149,6 +1150,124 @@
     ok('localStorage atualizado após exclusão', lido.length === 1 && lido[0].tema === 'B');
     redacoesHist = prev;
     salvarRedacoesHist();
+  });
+
+  endSection();
+
+  // ─── SEÇÃO 28 — Exportação para PDF ─────────────────────────────────────────
+
+  section('28 — Exportação para PDF');
+
+  // Funções existem
+  ok('exportarParaPDF é função',        typeof exportarParaPDF === 'function');
+  ok('_buildExportContent é função',    typeof _buildExportContent === 'function');
+  ok('exportarHistorihaAtual é função', typeof exportarHistorihaAtual === 'function');
+  ok('exportarMaterialAtual é função',  typeof exportarMaterialAtual === 'function');
+  ok('exportarMaterialSalvo é função',  typeof exportarMaterialSalvo === 'function');
+
+  // Elemento DOM #print-area existe
+  ok('#print-area existe', !!document.getElementById('print-area'));
+
+  // Botão PDF na result-historinha
+  noThrow('result-historinha tem botão PDF', () => {
+    const header = document.querySelector('#result-historinha .result-header');
+    ok('header de historinha existe', !!header);
+    const btns = header ? Array.from(header.querySelectorAll('button')) : [];
+    ok('botão PDF encontrado em historinha', btns.some(b => b.textContent.includes('PDF')));
+  });
+
+  // Botão PDF na result-material
+  noThrow('result-material tem botão PDF', () => {
+    const header = document.querySelector('#result-material .result-header');
+    ok('header de material existe', !!header);
+    const btns = header ? Array.from(header.querySelectorAll('button')) : [];
+    ok('botão PDF encontrado em material', btns.some(b => b.textContent.includes('PDF')));
+  });
+
+  // _buildExportContent — historinha
+  noThrow('_buildExportContent historinha monta HTML correto', () => {
+    const m = { tipo: 'historinha', matNome: 'Direito Internacional', unidade: 'N1', conteudoRaw: 'Texto da historinha.' };
+    const { titulo, html } = _buildExportContent(m);
+    ok('título inclui matNome', titulo.includes('Direito Internacional'));
+    ok('título inclui unidade', titulo.includes('N1'));
+    ok('título inclui Historinha', titulo.includes('Historinha'));
+    ok('html contém o texto', html.includes('Texto da historinha.'));
+    ok('html usa pre-wrap', html.includes('pre-wrap'));
+  });
+
+  // _buildExportContent — flashcards
+  noThrow('_buildExportContent flashcards monta grid de cards', () => {
+    const payload = JSON.stringify({ flashcards: [
+      { pergunta: 'O que é VCLT?', resposta: 'Convenção de Viena sobre Direito dos Tratados.' },
+      { pergunta: 'Ano da VCLT?',  resposta: '1969.' }
+    ]});
+    const m = { tipo: 'flashcards', matNome: 'DIP', unidade: 'N2', conteudoRaw: payload };
+    const { titulo, html } = _buildExportContent(m);
+    ok('título inclui Flashcards', titulo.includes('Flashcards'));
+    ok('html tem print-fc-grid', html.includes('print-fc-grid'));
+    ok('html tem Card 1', html.includes('Card 1'));
+    ok('html tem Card 2', html.includes('Card 2'));
+    ok('html tem pergunta do card 1', html.includes('O que é VCLT?'));
+    ok('html tem resposta do card 1', html.includes('Convenção de Viena'));
+  });
+
+  // _buildExportContent — questoes
+  noThrow('_buildExportContent questoes monta lista numerada', () => {
+    const payload = JSON.stringify({ questoes: [
+      { enunciado: 'Qual o artigo 38 do Estatuto da CIJ?', gabarito: 'A', explicacao: 'Lista as fontes.' }
+    ]});
+    const m = { tipo: 'questoes', matNome: 'DIP', unidade: 'N1', conteudoRaw: payload };
+    const { titulo, html } = _buildExportContent(m);
+    ok('título inclui Questões', titulo.includes('Questões'));
+    ok('html tem print-q', html.includes('print-q'));
+    ok('html tem Questão 1', html.includes('Questão 1'));
+    ok('html tem gabarito A', html.includes('Gabarito: A'));
+    ok('html tem explicação', html.includes('Lista as fontes.'));
+  });
+
+  // _buildExportContent — JSON inválido cai no fallback de texto
+  noThrow('_buildExportContent flashcards JSON inválido usa fallback', () => {
+    const m = { tipo: 'flashcards', matNome: 'X', unidade: 'N1', conteudoRaw: 'não é JSON' };
+    const { html } = _buildExportContent(m);
+    ok('fallback usa pre-wrap', html.includes('pre-wrap'));
+  });
+
+  // exportarParaPDF — popula #print-area com titulo e data
+  noThrow('exportarParaPDF popula #print-area (sem chamar window.print)', () => {
+    const origPrint = window.print;
+    window.print = () => {};  // mock
+    exportarParaPDF('Teste de Exportação', '<p>Conteúdo de teste</p>');
+    const area = document.getElementById('print-area');
+    ok('#print-area tem o título', area.innerHTML.includes('Teste de Exportação'));
+    ok('#print-area tem o conteúdo', area.innerHTML.includes('Conteúdo de teste'));
+    ok('#print-area tem a marca Estuda.AI', area.innerHTML.includes('Estuda.AI'));
+    area.innerHTML = '';  // limpar
+    window.print = origPrint;
+  });
+
+  // exportarHistorihaAtual — sem texto mostra toast sem lançar exceção
+  noThrow('exportarHistorihaAtual() sem historinha não lança exceção', () => {
+    const el = document.getElementById('result-hist-text');
+    const prevTxt = el.innerText;
+    el.innerText = '';
+    exportarHistorihaAtual();  // deve chamar toast e retornar sem erro
+    ok('sem historinha não lança exceção', true);
+    el.innerText = prevTxt;
+  });
+
+  // exportarMaterialAtual — sem material não lança exceção
+  noThrow('exportarMaterialAtual() sem material não lança exceção', () => {
+    const prev = materialGeradoAtual;
+    materialGeradoAtual = null;
+    exportarMaterialAtual();
+    ok('sem material não lança exceção', true);
+    materialGeradoAtual = prev;
+  });
+
+  // exportarMaterialSalvo — índice inválido não lança exceção
+  noThrow('exportarMaterialSalvo(999) índice inválido não lança exceção', () => {
+    exportarMaterialSalvo(999);
+    ok('índice inválido não lança exceção', true);
   });
 
   endSection();
