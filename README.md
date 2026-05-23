@@ -46,6 +46,13 @@ Todas as redações corrigidas são salvas automaticamente na aba **Histórico**
 ### Exportação para PDF
 Historinhas e flashcards (incluindo questões) podem ser exportados como PDF diretamente pelo navegador — sem bibliotecas externas, via `window.print()` com CSS de impressão dedicado. Um botão **📄 PDF** aparece no cabeçalho de cada resultado gerado (Historinha e Material) e em cada item salvo em Materiais Salvos. O layout de impressão inclui cabeçalho com título e data, grelha de 2 colunas para flashcards (frente e verso visíveis), lista numerada para questões com gabarito, e rodapé de marca.
 
+### Estatísticas por matéria e por período
+O painel **Progresso** exibe dois novos blocos de análise de desempenho baseados nos simulados realizados:
+
+- **Estatísticas por matéria** — lista todas as matérias do programa ativo com: acertos ✓, erros ✗, total de questões respondidas e taxa de acerto colorida (verde ≥70%, amarelo ≥50%, vermelho <50%). Ordenada por atividade (mais questões primeiro). Acompanha barra visual de acerto por matéria.
+- **Gráfico de barras** — Chart.js mostrando acertos vs. erros para até 8 matérias com mais atividade no programa ativo.
+- **Estatísticas por período** — visível apenas para programas com períodos (graduação). Agrega acertos, erros e taxa de acerto de todas as matérias vinculadas a cada período. Períodos sem simulados exibem aviso "Sem simulados".
+
 ### Material de Estudo (PDF / Texto)
 Upload de PDF ou texto colado manualmente. Gera à escolha:
 - **Historinha** — resumo narrativo para memorização
@@ -146,7 +153,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 2. Abra o DevTools → Console (F12)
 3. Cole o conteúdo de `tests.js` e pressione Enter
 
-**Cobertura (290+ asserções, 28 seções):**
+**Cobertura (340+ asserções, 29 seções):**
 
 | Seção | O que testa |
 |-------|-------------|
@@ -178,6 +185,7 @@ O arquivo `tests.js` contém smoke tests executáveis diretamente no console do 
 | Onboarding wizard | initOnboarding, onbSelecionarTipo, onbRenderStep, onbNext/Back/Skip/Fechar, elementos DOM do wizard |
 | Histórico de redações | extrairNotaRedacao (padrões), renderHistoricoRedacoes, renderGraficoRedacoes, switchRedTab, verRedacaoHistorico, excluirRedacaoHistorico, salvarRedacoesHist, syncRedacoesHistItem, elementos DOM |
 | Exportação PDF | exportarParaPDF, _buildExportContent (historinha/flashcards/questoes/fallback), exportarHistorihaAtual, exportarMaterialAtual, exportarMaterialSalvo, #print-area, botões PDF em result boxes e materiais salvos |
+| Estatísticas por matéria e período | renderEstatisticasMateria (rows, barras, taxa de acerto), renderEstatisticasPeriodo (visibilidade condicional, agregação por período), renderGraficoEstatMat (bar chart Chart.js), integração com renderProgresso |
 
 O runner faz **snapshot/restore** do estado global: os testes não alteram dados reais do usuário.
 
