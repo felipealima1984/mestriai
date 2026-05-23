@@ -24,6 +24,7 @@
  *  - Logo imagem: elementos #logo-sidebar e #logo-auth (img tags), atualizarLogoTema, troca de src por tema
  *  - Notificações SM-2: contarCardsDue, atualizarBotaoNotif, ativar/desativar/toggle, verificarNotificacoes, #btn-notif
  *  - Onboarding wizard: initOnboarding, onbSelecionarTipo, onbRenderStep, onbNext/Back/Skip/Fechar, elementos DOM do wizard
+ *  - Histórico de redações: extrairNotaRedacao, renderHistoricoRedacoes, renderGraficoRedacoes, switchRedTab, verRedacaoHistorico, excluirRedacaoHistorico, syncRedacoesHistItem, elementos DOM
  */
 (() => {
   'use strict';
@@ -1007,6 +1008,147 @@
     onbNext();
     ok('permanece no passo 1 sem nome', document.getElementById('onb-step-1').style.display !== 'none');
     inp.value = prevVal;
+  });
+
+  endSection();
+
+  // ─── SEÇÃO 27 — Histórico de Redações + Gráfico ─────────────────────────────
+
+  section('27 — Histórico de Redações + Gráfico');
+
+  // Funções existem
+  ok('extrairNotaRedacao é função',      typeof extrairNotaRedacao === 'function');
+  ok('renderHistoricoRedacoes é função', typeof renderHistoricoRedacoes === 'function');
+  ok('renderGraficoRedacoes é função',   typeof renderGraficoRedacoes === 'function');
+  ok('switchRedTab é função',            typeof switchRedTab === 'function');
+  ok('verRedacaoHistorico é função',     typeof verRedacaoHistorico === 'function');
+  ok('excluirRedacaoHistorico é função', typeof excluirRedacaoHistorico === 'function');
+  ok('syncRedacoesHistItem é função',    typeof syncRedacoesHistItem === 'function');
+  ok('salvarRedacoesHist é função',      typeof salvarRedacoesHist === 'function');
+
+  // Elementos DOM existem
+  ok('#panel-redacao existe',        !!document.getElementById('panel-redacao'));
+  ok('#tab-red-nova existe',         !!document.getElementById('tab-red-nova'));
+  ok('#tab-red-hist existe',         !!document.getElementById('tab-red-hist'));
+  ok('#red-nova-panel existe',       !!document.getElementById('red-nova-panel'));
+  ok('#red-hist-panel existe',       !!document.getElementById('red-hist-panel'));
+  ok('#chart-redacoes existe',       !!document.getElementById('chart-redacoes'));
+  ok('#chart-redacoes-vazio existe', !!document.getElementById('chart-redacoes-vazio'));
+  ok('#red-hist-lista existe',       !!document.getElementById('red-hist-lista'));
+  ok('#red-hist-vazio existe',       !!document.getElementById('red-hist-vazio'));
+
+  // extrairNotaRedacao — padrões suportados
+  ok('extrair "Nota geral: 7.5"',    extrairNotaRedacao('Nota geral: 7.5') === 7.5);
+  ok('extrair "nota geral: 8"',      extrairNotaRedacao('nota geral: 8') === 8);
+  ok('extrair "8/10"',               extrairNotaRedacao('A redação recebeu 8/10 pontos') === 8);
+  ok('extrair "7,5/10"',             extrairNotaRedacao('Nota: 7,5/10') === 7.5);
+  ok('extrair texto sem nota → null', extrairNotaRedacao('Sem nota aqui') === null);
+  ok('extrair string vazia → null',  extrairNotaRedacao('') === null);
+
+  // redacoesHist — array global existe
+  ok('redacoesHist é array',         Array.isArray(redacoesHist));
+
+  // salvarRedacoesHist persiste no localStorage
+  noThrow('salvarRedacoesHist() persiste no localStorage', () => {
+    const prev = JSON.parse(localStorage.getItem('estuda_redacoes_hist') || '[]');
+    const prevHist = [...redacoesHist];
+    redacoesHist = [{ tema: 'Teste', nota: 9, texto: 'x', correcao: 'y', data: new Date().toISOString() }];
+    salvarRedacoesHist();
+    const lido = JSON.parse(localStorage.getItem('estuda_redacoes_hist') || '[]');
+    ok('localStorage contém o item salvo', lido.length === 1 && lido[0].tema === 'Teste' && lido[0].nota === 9);
+    redacoesHist = prevHist;
+    salvarRedacoesHist();
+  });
+
+  // switchRedTab — alterna abas
+  noThrow('switchRedTab(historico) mostra painel de histórico', () => {
+    switchRedTab('historico');
+    ok('red-hist-panel visível',   document.getElementById('red-hist-panel').style.display !== 'none');
+    ok('red-nova-panel oculto',    document.getElementById('red-nova-panel').style.display === 'none');
+    ok('tab-red-hist ativo',       document.getElementById('tab-red-hist').classList.contains('active'));
+    ok('tab-red-nova inativo',     !document.getElementById('tab-red-nova').classList.contains('active'));
+  });
+  noThrow('switchRedTab(nova) restaura aba nova', () => {
+    switchRedTab('nova');
+    ok('red-nova-panel visível',   document.getElementById('red-nova-panel').style.display !== 'none');
+    ok('red-hist-panel oculto',    document.getElementById('red-hist-panel').style.display === 'none');
+    ok('tab-red-nova ativo',       document.getElementById('tab-red-nova').classList.contains('active'));
+  });
+
+  // renderHistoricoRedacoes — sem dados
+  noThrow('renderHistoricoRedacoes() vazio não lança exceção', () => {
+    const prev = [...redacoesHist];
+    redacoesHist = [];
+    renderHistoricoRedacoes();
+    ok('lista vazia renderizada sem erro', document.getElementById('red-hist-lista').innerHTML === '');
+    ok('#red-hist-vazio visível quando vazio', document.getElementById('red-hist-vazio').style.display !== 'none');
+    redacoesHist = prev;
+  });
+
+  // renderHistoricoRedacoes — com dados
+  noThrow('renderHistoricoRedacoes() com dados renderiza itens', () => {
+    const prev = [...redacoesHist];
+    redacoesHist = [
+      { tema: 'Redação A', nota: 8,    texto: 't', correcao: 'c', data: new Date().toISOString() },
+      { tema: 'Redação B', nota: 5.5,  texto: 't', correcao: 'c', data: new Date().toISOString() },
+      { tema: 'Sem nota',  nota: null,  texto: 't', correcao: 'c', data: new Date().toISOString() },
+    ];
+    renderHistoricoRedacoes();
+    const itens = document.querySelectorAll('.red-hist-item');
+    ok('3 itens renderizados', itens.length === 3);
+    ok('#red-hist-vazio oculto com dados', document.getElementById('red-hist-vazio').style.display === 'none');
+    ok('item sem nota exibe —', document.getElementById('red-hist-lista').textContent.includes('—'));
+    redacoesHist = prev;
+    renderHistoricoRedacoes();
+  });
+
+  // renderGraficoRedacoes — sem notas
+  noThrow('renderGraficoRedacoes([]) oculta canvas', () => {
+    renderGraficoRedacoes([]);
+    ok('canvas oculto sem dados', document.getElementById('chart-redacoes').style.display === 'none');
+    ok('#chart-redacoes-vazio visível', document.getElementById('chart-redacoes-vazio').style.display !== 'none');
+  });
+
+  // renderGraficoRedacoes — com notas
+  noThrow('renderGraficoRedacoes() com notas exibe canvas', () => {
+    const dados = [
+      { tema: 'A', nota: 7, data: new Date().toISOString() },
+      { tema: 'B', nota: 9, data: new Date().toISOString() },
+    ];
+    renderGraficoRedacoes(dados);
+    ok('canvas visível com notas', document.getElementById('chart-redacoes').style.display !== 'none');
+    ok('#chart-redacoes-vazio oculto', document.getElementById('chart-redacoes-vazio').style.display === 'none');
+  });
+
+  // verRedacaoHistorico — preenche painel
+  noThrow('verRedacaoHistorico(i) preenche result-red-text e campos', () => {
+    const prev = [...redacoesHist];
+    redacoesHist = [{ tema: 'Tema Teste', nota: 8, texto: 'Texto da redação', correcao: 'Correção detalhada', data: new Date().toISOString() }];
+    verRedacaoHistorico(0);
+    ok('result-red-text preenchido',   document.getElementById('result-red-text').textContent === 'Correção detalhada');
+    ok('result-redacao visível',       document.getElementById('result-redacao').classList.contains('visible'));
+    ok('red-nova-panel ativo após ver', document.getElementById('red-nova-panel').style.display !== 'none');
+    ok('tema-titulo preenchido',       document.getElementById('tema-titulo').textContent === 'Tema Teste');
+    ok('red-texto preenchido',         document.getElementById('red-texto').value === 'Texto da redação');
+    redacoesHist = prev;
+    document.getElementById('result-redacao').classList.remove('visible');
+  });
+
+  // excluirRedacaoHistorico — remove item
+  noThrow('excluirRedacaoHistorico(e, i) remove item correto', () => {
+    const prev = [...redacoesHist];
+    redacoesHist = [
+      { tema: 'A', nota: 8, texto: '', correcao: '', data: new Date().toISOString() },
+      { tema: 'B', nota: 6, texto: '', correcao: '', data: new Date().toISOString() },
+    ];
+    const fakeEvt = { stopPropagation: () => {} };
+    excluirRedacaoHistorico(fakeEvt, 0);
+    ok('item 0 removido — restou 1', redacoesHist.length === 1);
+    ok('item restante é o B',        redacoesHist[0].tema === 'B');
+    const lido = JSON.parse(localStorage.getItem('estuda_redacoes_hist') || '[]');
+    ok('localStorage atualizado após exclusão', lido.length === 1 && lido[0].tema === 'B');
+    redacoesHist = prev;
+    salvarRedacoesHist();
   });
 
   endSection();
