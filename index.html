@@ -397,6 +397,17 @@ mjx-container svg { color: var(--text); }
 .red-hist-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;line-height:1;transition:color .15s;}
 .red-hist-del:hover{color:var(--red,#e57373);}
 
+/* ESTATÍSTICAS POR MATÉRIA E PERÍODO */
+.stats-mat-row{padding:10px 0;border-bottom:1px solid var(--border);}
+.stats-mat-row:last-child{border-bottom:none;}
+.stats-mat-nome{font-size:13px;font-weight:500;margin-bottom:4px;}
+.stats-mat-numeros{display:flex;gap:14px;font-size:12px;margin-bottom:6px;}
+.stats-mat-bar-wrap{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.stats-mat-bar{height:100%;border-radius:2px;transition:width .3s ease;}
+.stats-per-row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;gap:8px;}
+.stats-per-nome{font-size:13px;font-weight:500;}
+.stats-per-info{display:flex;gap:10px;font-size:12px;align-items:center;flex-wrap:wrap;}
+
 /* EXPORTAÇÃO PDF */
 #print-area{display:none;}
 @media print{
@@ -1430,6 +1441,12 @@ mjx-container svg { color: var(--text); }
       <div id="prior-list" style="margin-bottom:24px"></div>
       <div class="section-title">Diagnóstico de lacunas — simulados</div>
       <div id="diag-prog" style="margin-bottom:24px"></div>
+
+      <div class="section-title">Estatísticas por matéria — simulados</div>
+      <div id="stats-mat-container" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px"></div>
+
+      <div class="section-title" id="st-stats-per" style="display:none">Estatísticas por período</div>
+      <div id="stats-per-container" style="margin-bottom:24px;display:none"></div>
 
       <div class="section-title">Consistência — últimos 30 dias</div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:24px">
@@ -3667,6 +3684,9 @@ function renderProgresso() {
   renderDominio();
   renderPrioridade();
   renderDiagnostico('diag-prog', programaAtivoId);
+  renderEstatisticasMateria();
+  renderEstatisticasPeriodo();
+  renderGraficoEstatMat();
   renderConsistencia();
   renderHistorico();
 }
@@ -5155,6 +5175,122 @@ function verificarNotificacoes(forcar) {
 function iniciarVerificacaoHoraria() {
   // Verificar a cada hora se há cards devidos (para app que fica aberto o dia todo)
   setInterval(() => verificarNotificacoes(false), 60 * 60 * 1000);
+}
+
+// ============================================================
+// ESTATÍSTICAS POR MATÉRIA E POR PERÍODO (TAREFA 15)
+// ============================================================
+
+let chartEstatInst = null;
+
+function renderEstatisticasMateria() {
+  const el = document.getElementById('stats-mat-container');
+  if (!el) return;
+  const mats = getTodasMaterias(programaAtivoId);
+  const rows = mats.map(m => {
+    const l = lacunas[m.id] || { acertos: 0, erros: 0 };
+    const total = l.acertos + l.erros;
+    const taxa = total > 0 ? Math.round(l.acertos / total * 100) : null;
+    return { m, acertos: l.acertos, erros: l.erros, total, taxa };
+  }).sort((a, b) => b.total - a.total);
+
+  if (!rows.some(r => r.total > 0)) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:4px 0">Faça simulados para ver estatísticas por matéria.</div>';
+    return;
+  }
+  el.innerHTML = rows.map(r => {
+    const cor = r.taxa === null ? 'var(--muted)' : r.taxa >= 70 ? 'var(--green)' : r.taxa >= 50 ? 'var(--cacd)' : 'var(--red,#e57373)';
+    const barW = r.taxa !== null ? r.taxa : 0;
+    return `<div class="stats-mat-row">
+      <div class="stats-mat-nome">${r.m.nome.split('—')[0].trim()}</div>
+      <div class="stats-mat-numeros">
+        <span style="color:var(--green)">${r.acertos} ✓</span>
+        <span style="color:var(--red,#e57373)">${r.erros} ✗</span>
+        <span style="font-size:11px;color:var(--muted)">${r.total} questões</span>
+        ${r.taxa !== null ? `<span style="color:${cor};font-weight:700">${r.taxa}% acerto</span>` : '<span style="color:var(--muted)">—</span>'}
+      </div>
+      <div class="stats-mat-bar-wrap"><div class="stats-mat-bar" style="width:${barW}%;background:${cor}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderEstatisticasPeriodo() {
+  const titleEl = document.getElementById('st-stats-per');
+  const el = document.getElementById('stats-per-container');
+  if (!el || !titleEl) return;
+
+  const progPeriodos = periodos.filter(p =>
+    materias.some(m => (m.programaId || m.frente) === programaAtivoId && m.periodoId === p.id)
+  );
+  if (!progPeriodos.length) {
+    titleEl.style.display = 'none'; el.style.display = 'none'; return;
+  }
+  titleEl.style.display = ''; el.style.display = '';
+
+  el.innerHTML = progPeriodos.map(p => {
+    const mats = materias.filter(m => (m.programaId || m.frente) === programaAtivoId && m.periodoId === p.id);
+    let totAcertos = 0, totErros = 0;
+    mats.forEach(m => { const l = lacunas[m.id]; if (l) { totAcertos += l.acertos; totErros += l.erros; } });
+    const total = totAcertos + totErros;
+    const taxa  = total > 0 ? Math.round(totAcertos / total * 100) : null;
+    const cor   = taxa === null ? 'var(--muted)' : taxa >= 70 ? 'var(--green)' : taxa >= 50 ? 'var(--cacd)' : 'var(--red,#e57373)';
+    return `<div class="stats-per-row">
+      <div class="stats-per-nome">${p.numero}º Período${p.descricao ? ' — ' + p.descricao : ''}</div>
+      <div class="stats-per-info">
+        <span style="color:var(--muted)">${mats.length} matéria${mats.length !== 1 ? 's' : ''}</span>
+        ${total > 0
+          ? `<span style="color:var(--green)">${totAcertos} ✓</span>
+             <span style="color:var(--red,#e57373)">${totErros} ✗</span>
+             <span style="color:${cor};font-weight:700">${taxa}%</span>`
+          : '<span style="color:var(--muted)">Sem simulados</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderGraficoEstatMat() {
+  if (!window.Chart) return;
+  const existingWrap = document.getElementById('chart-stats-wrap');
+  if (existingWrap) existingWrap.remove();
+  if (chartEstatInst) { chartEstatInst.destroy(); chartEstatInst = null; }
+
+  const mats = getTodasMaterias(programaAtivoId);
+  const comDados = mats
+    .map(m => ({ nome: m.nome.split('—')[0].trim().substring(0, 18), l: lacunas[m.id] || { acertos: 0, erros: 0 } }))
+    .filter(r => (r.l.acertos + r.l.erros) > 0)
+    .sort((a, b) => (b.l.acertos + b.l.erros) - (a.l.acertos + a.l.erros))
+    .slice(0, 8);
+  if (!comDados.length) return;
+
+  const wrap = document.createElement('div');
+  wrap.id = 'chart-stats-wrap';
+  wrap.innerHTML = '<div class="chart-wrap"><canvas id="chart-stats-mat" height="160"></canvas></div>';
+  const statsEl = document.getElementById('stats-mat-container');
+  if (statsEl && statsEl.parentNode) statsEl.parentNode.insertBefore(wrap, statsEl);
+
+  const isDark = !document.body.classList.contains('theme-light') && !document.body.classList.contains('theme-gray');
+  const textColor = isDark ? '#7a7870' : '#888680';
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+  const canvas = document.getElementById('chart-stats-mat');
+  if (!canvas) return;
+  chartEstatInst = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: comDados.map(r => r.nome),
+      datasets: [
+        { label: 'Acertos', data: comDados.map(r => r.l.acertos), backgroundColor: 'rgba(76,175,80,0.75)', borderRadius: 4 },
+        { label: 'Erros',   data: comDados.map(r => r.l.erros),   backgroundColor: 'rgba(229,115,115,0.75)', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: textColor, boxWidth: 12, font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true }
+      }
+    }
+  });
 }
 
 // ============================================================
