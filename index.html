@@ -397,6 +397,22 @@ mjx-container svg { color: var(--text); }
 .red-hist-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;line-height:1;transition:color .15s;}
 .red-hist-del:hover{color:var(--red,#e57373);}
 
+/* EXPORTAÇÃO PDF */
+#print-area{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #print-area,#print-area *{visibility:visible;}
+  #print-area{position:fixed;top:0;left:0;width:100%;padding:40px;background:#fff;color:#000;font-family:Georgia,serif;font-size:14px;line-height:1.8;box-sizing:border-box;}
+  .print-fc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .print-fc{border:1px solid #ddd;border-radius:8px;padding:14px;break-inside:avoid;}
+  .print-fc-num{font-size:10px;color:#999;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;}
+  .print-fc-q{font-weight:600;margin-bottom:8px;}
+  .print-fc-a{border-top:1px solid #eee;padding-top:8px;color:#444;}
+  .print-q{margin-bottom:20px;padding:16px;border:1px solid #eee;border-radius:8px;break-inside:avoid;}
+  .print-q-num{font-size:10px;color:#999;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;}
+  .print-q-gabarito{padding:10px;background:#f5f5f5;border-radius:4px;margin-top:10px;}
+}
+
 /* GRÁFICOS */
 .chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;}
 .chart-title{font-family:var(--font-head);font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
@@ -979,6 +995,7 @@ mjx-container svg { color: var(--text); }
           <div style="display:flex;gap:6px">
             <button class="btn btn-secondary btn-sm" onclick="salvarHistorinha()">💾 Salvar</button>
             <button class="btn btn-secondary btn-sm" onclick="copiarTexto('result-hist-text')">📋 Copiar</button>
+            <button class="btn btn-secondary btn-sm" onclick="exportarHistorihaAtual()">📄 PDF</button>
           </div>
         </div>
         <div class="result-text" id="result-hist-text"></div>
@@ -1142,6 +1159,7 @@ mjx-container svg { color: var(--text); }
           <div style="display:flex;gap:6px">
             <button class="btn btn-secondary btn-sm" onclick="salvarMaterialGerado()">💾 Salvar</button>
             <button class="btn btn-secondary btn-sm" onclick="copiarTexto('mat-result-body')">📋 Copiar</button>
+            <button class="btn btn-secondary btn-sm" onclick="exportarMaterialAtual()">📄 PDF</button>
           </div>
         </div>
         <div id="mat-result-body"></div>
@@ -3193,6 +3211,7 @@ function renderMateriaisSalvos() {
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-secondary btn-sm" onclick="visualizarMaterialSalvo(${i})">Ver</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportarMaterialSalvo(${i})" title="Exportar PDF">📄</button>
         <button class="btn btn-danger btn-sm" onclick="excluirMaterialSalvo(${i})">×</button>
       </div>
     </div>`).join('')}</div>`;
@@ -5139,6 +5158,85 @@ function iniciarVerificacaoHoraria() {
 }
 
 // ============================================================
+// EXPORTAÇÃO PARA PDF (PRINT)
+// ============================================================
+
+function exportarParaPDF(titulo, htmlContent) {
+  const area = document.getElementById('print-area');
+  if (!area) return;
+  const data = new Date().toLocaleDateString('pt-BR');
+  area.innerHTML = `<div style="font-family:Georgia,serif;max-width:800px;margin:0 auto;color:#000">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #c8a96e;padding-bottom:12px;margin-bottom:28px">
+      <div>
+        <div style="font-size:10px;letter-spacing:2px;color:#c8a96e;text-transform:uppercase;margin-bottom:4px">Estuda.AI</div>
+        <div style="font-size:20px;font-weight:700">${titulo}</div>
+      </div>
+      <div style="font-size:11px;color:#888">${data}</div>
+    </div>
+    ${htmlContent}
+    <div style="margin-top:48px;padding-top:12px;border-top:1px solid #e0e0e0;font-size:11px;color:#aaa;text-align:center">Gerado por Estuda.AI</div>
+  </div>`;
+  window.print();
+}
+
+function _buildExportContent(m) {
+  const labels = { historinha: 'Historinha', flashcards: 'Flashcards', questoes: 'Questões' };
+  const titulo = [m.matNome, m.unidade, labels[m.tipo] || m.tipo].filter(Boolean).join(' — ');
+  let html = '';
+  if (m.tipo === 'historinha') {
+    const txt = (m.conteudoRaw || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html = `<div style="font-size:14px;line-height:1.9;white-space:pre-wrap">${txt}</div>`;
+  } else if (m.tipo === 'flashcards') {
+    try {
+      const d = JSON.parse((m.conteudoRaw || '').replace(/```json|```/g,'').trim());
+      html = `<div class="print-fc-grid">${(d.flashcards||[]).map((fc, i) =>
+        `<div class="print-fc">
+          <div class="print-fc-num">Card ${i+1}</div>
+          <div class="print-fc-q">${(fc.pergunta||'').replace(/</g,'&lt;')}</div>
+          <div class="print-fc-a">${(fc.resposta||'').replace(/</g,'&lt;')}</div>
+        </div>`).join('')}</div>`;
+    } catch(_) {
+      html = `<pre style="white-space:pre-wrap">${(m.conteudoRaw||'').replace(/</g,'&lt;')}</pre>`;
+    }
+  } else {
+    try {
+      const d = JSON.parse((m.conteudoRaw || '').replace(/```json|```/g,'').trim());
+      html = (d.questoes||[]).map((q, i) =>
+        `<div class="print-q">
+          <div class="print-q-num">Questão ${i+1}</div>
+          <div>${(q.enunciado||'').replace(/</g,'&lt;')}</div>
+          <div class="print-q-gabarito"><strong>Gabarito: ${q.gabarito||''}</strong>${q.explicacao ? ' — ' + q.explicacao.replace(/</g,'&lt;') : ''}</div>
+        </div>`).join('');
+    } catch(_) {
+      html = `<pre style="white-space:pre-wrap">${(m.conteudoRaw||'').replace(/</g,'&lt;')}</pre>`;
+    }
+  }
+  return { titulo, html };
+}
+
+function exportarHistorihaAtual() {
+  const txt = document.getElementById('result-hist-text')?.innerText?.trim();
+  const tag = document.getElementById('hist-tag')?.textContent || '';
+  if (!txt) { toast('Nenhuma historinha para exportar'); return; }
+  const conteudo = txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  exportarParaPDF('Historinha — ' + tag,
+    `<div style="font-size:14px;line-height:1.9;white-space:pre-wrap">${conteudo}</div>`);
+}
+
+function exportarMaterialAtual() {
+  if (!materialGeradoAtual) { toast('Nenhum material para exportar'); return; }
+  const { titulo, html } = _buildExportContent(materialGeradoAtual);
+  exportarParaPDF(titulo, html);
+}
+
+function exportarMaterialSalvo(i) {
+  const m = materiaisSalvos[i];
+  if (!m) return;
+  const { titulo, html } = _buildExportContent(m);
+  exportarParaPDF(titulo, html);
+}
+
+// ============================================================
 // INICIALIZAÇÃO DOS NOVOS RECURSOS
 // ============================================================
 function initNovosRecursos() {
@@ -5212,6 +5310,8 @@ function initNovosRecursos() {
 </script>
 
 <!-- Banner de atualização disponível -->
+<div id="print-area"></div>
+
 <div id="pwa-update-banner" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.4);z-index:9999;align-items:center;gap:12px;font-size:13px;white-space:nowrap">
   <span>Nova versão disponível</span>
   <button id="pwa-update-btn" style="padding:5px 14px;background:var(--cacd);color:#0e0f14;border:none;border-radius:6px;font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer">Atualizar</button>
