@@ -5,199 +5,203 @@
 
 ---
 
-## Arquitetura recomendada
+## Arquitetura em produção
 
-O Estuda.AI é uma SPA single-file (index.html). A arquitetura ideal para produção com custo mínimo é:
+O Estuda.AI é uma SPA single-file (index.html). O frontend **não precisa de servidor pago** — fica no GitHub Pages gratuitamente. Todo o lado servidor é coberto pelo Supabase via Edge Functions.
 
 ```
 [Usuário]
     ↓ HTTPS
-[GitHub Pages / Vercel / Cloudflare Pages]  ← frontend estático (GRÁTIS)
+[GitHub Pages]  ←  frontend estático (GRÁTIS, sem necessidade de VPS)
     ↓ fetch
-[Supabase]  ← auth + banco PostgreSQL + Edge Functions
-    ├── auth.supabase.co         → login/sessão
-    ├── db.supabase.co           → materias, stats, historico, preferencias
-    ├── Edge Function: stripe-webhook  → recebe eventos do Stripe
-    └── Edge Function: anthropic-proxy → proxeia chamadas à Claude API
-    ↓
-[Stripe]    ← pagamentos
-[Anthropic] ← Claude Haiku (via proxy)
+[Supabase]  ←  auth + banco PostgreSQL + Edge Functions (o "servidor" real)
+    ├── auth            → login e sessão dos usuários
+    ├── banco           → materias, stats, historico, preferencias
+    ├── Edge Function: stripe-webhook   → processa eventos de pagamento
+    └── Edge Function: anthropic-proxy → chama a Claude API com chave da plataforma
+         ↓
+    [Stripe]     ← cobra assinantes, repassa para sua conta bancária
+    [Anthropic]  ← Claude Haiku gera o conteúdo
 ```
 
 ---
 
-## Serviços necessários e custos
+## O que contratar — apenas 4 serviços
 
-### 1. Hospedagem do frontend
+### 1. Supabase Pro — $25/mês (~R$125)
 
-| Opção | Custo | Notas |
-|-------|-------|-------|
-| **GitHub Pages** (atual) | **Grátis** | Ideal para começar; domínio personalizado grátis com CNAME |
-| Vercel Hobby | **Grátis** | Melhor CDN, analytics básico, domínio personalizado grátis |
-| Cloudflare Pages | **Grátis** | CDN global, build automático, domínio personalizado grátis |
-| Netlify Starter | **Grátis** | Similar ao Vercel |
+É o único "servidor" real que você paga. O plano Pro libera as Edge Functions sem restrições de produção, garante backups diários e suporte.
 
-**Recomendação:** manter GitHub Pages por enquanto. Se precisar de analytics ou SSR no futuro, migrar para Vercel.
+| Plano | Custo/mês | Para quando usar |
+|-------|----------:|-----------------|
+| Free | $0 | Desenvolvimento e testes |
+| **Pro** | **$25 (~R$125)** | **Produção — contratar ao lançar** |
+| Team | $599 | Equipe grande, SLA garantido |
 
----
-
-### 2. Banco de dados + Auth + Edge Functions — Supabase
-
-| Plano | Custo/mês | Limites relevantes |
-|-------|----------:|--------------------|
-| **Free** | **$0** | 500MB DB · 50MB armazenamento · 500K invocações Edge Function/mês · 2GB bandwidth |
-| **Pro** | **$25** | 8GB DB · 100GB armazenamento · 2M invocações Edge Function/mês · 250GB bandwidth · backups diários |
-| **Team** | $599 | Múltiplos membros, SLA, suporte prioritário |
-
-**Recomendação inicial:** começar no **Free**. O plano free suporta bem até ~500 usuários ativos.  
-**Quando subir para Pro:** quando ultrapassar 400 usuários cadastrados ou 400K Edge Function invocações/mês.
-
-**Estimativa de invocações/mês (plano Free — 500K limite):**
-- 500 usuários × 20 gerações/mês × 1 chamada proxy = 10.000 invocações
-- Stripe webhook: ~5 eventos/assinatura × 100 assinaturas = 500 invocações
-- Total estimado com 500 usuários ativos: **~11.000/mês** (bem dentro do free tier)
+**Onde contratar:** supabase.com → seu projeto → Settings → Billing → Upgrade to Pro
 
 ---
 
-### 3. Pagamentos — Stripe
+### 2. Stripe — gratuito (cobra por transação)
 
-| Modalidade | Taxa | Observações |
-|------------|------|-------------|
-| Cartão de crédito (Brasil) | 3,49% + R$0,39 por transação | Para assinaturas recorrentes em BRL |
-| PIX (via Stripe) | 1% (mín. R$0,50, máx. R$5,00) | Disponível no Stripe Brasil desde 2023 |
-| Boleto bancário | 1,5% + R$1,50 | Disponível, mas taxa de inadimplência alta |
+Sem mensalidade. Você paga somente quando recebe.
 
-**Conta Stripe:** gratuita. Só paga quando há transações.
+| Modalidade | Taxa | Você recebe (R$29,90) |
+|------------|------|-----------------------:|
+| Cartão de crédito | 3,49% + R$0,39 | **~R$28,47** |
+| PIX | 1% (mín. R$0,50) | **~R$29,40** |
+| Boleto | 1,5% + R$1,50 | ~R$27,95 |
 
-**Para o plano R$19,90/mês no cartão:**
-- Taxa Stripe: R$0,69 + R$0,39 = R$1,08 por cobrança
-- Você recebe: **R$18,82 por assinatura/mês**
+**Recomendação:** aceitar cartão e PIX. Boleto tem inadimplência alta — não compensa.
 
-**Para o plano R$19,90/mês via PIX:**
-- Taxa Stripe: R$0,20 (1% de R$19,90, acima do mínimo de R$0,50 → R$0,50)
-- Você recebe: **R$19,40 por assinatura/mês**
-
-**Requisitos para ativar Stripe no Brasil:**
+**Requisitos para ativar no Brasil:**
 - CPF ou CNPJ
 - Conta bancária brasileira (para receber repasses)
-- Documento de identidade para verificação KYC
+- Documento de identidade (verificação KYC)
+
+**Onde contratar:** stripe.com
 
 ---
 
-### 4. IA — Anthropic (Claude Haiku 4.5)
+### 3. Anthropic API — pago por uso (~R$0,50/usuário premium/mês)
 
-> Custo do modelo `claude-haiku-4-5-20251001` (preços em 05/2026):
+Custo do modelo `claude-haiku-4-5-20251001` (preços em 05/2026):
 
 | Direção | Preço por 1M tokens |
 |---------|--------------------:|
-| Input (contexto + prompt) | **$0,80** |
-| Output (resposta gerada) | **$4,00** |
+| Input (prompt) | $0,80 |
+| Output (resposta) | $4,00 |
 
-**Estimativa de custo por geração:**
-- Historinha: ~800 input + 800 output → $0,00064 + $0,0032 = **$0,0038 (~R$0,02)**
-- Simulado: ~600 input + 1500 output → $0,00048 + $0,006 = **$0,0065 (~R$0,03)**
-- Correção redação: ~1200 input + 1000 output → $0,00096 + $0,004 = **$0,005 (~R$0,03)**
+**Custo estimado por tipo de geração:**
 
-**Projeção de custo Anthropic por usuário premium (20 gerações/mês):**
-- Média de $0,005 por geração × 20 = **$0,10/usuário/mês (~R$0,50)**
-- Com 100 usuários premium: **~$10/mês (~R$50)** em API Anthropic
+| Geração | Input + Output | Custo |
+|---------|---------------|------:|
+| Historinha | ~800 + 800 tokens | ~R$0,02 |
+| Simulado | ~600 + 1500 tokens | ~R$0,03 |
+| Correção redação | ~1200 + 1000 tokens | ~R$0,03 |
 
-**Margem por usuário premium (R$19,90/mês cartão):**
-- Stripe fee: -R$1,08
-- Anthropic: -R$0,50
-- **Margem líquida: ~R$18,32/usuário/mês**
+**Projeção mensal por usuário premium (20 gerações/mês):**
+- Média R$0,025 × 20 = **~R$0,50/usuário/mês**
 
----
+Sem mensalidade — cobra só o que consumir.
 
-### 5. Domínio personalizado
-
-| Domínio | Registrador | Custo/ano |
-|---------|------------|----------:|
-| estudaai.com.br | Registro.br | R$40,00 |
-| estudaai.com | Cloudflare Registrar | ~$10,00 (~R$50) |
-| estuda.ai | Namecheap / GoDaddy | ~$80-120/ano |
-
-**Recomendação:** `estudaai.com.br` no Registro.br — mais barato, .br passa mais confiança para o público brasileiro.
+**Onde contratar:** console.anthropic.com → API Keys → adicionar cartão de crédito
 
 ---
 
-## Resumo de custos mensais
+### 4. Domínio personalizado — ~R$40/ano (~R$3,50/mês)
 
-### Fase 0 — Lançamento (0–50 usuários premium)
+| Opção | Registrador | Custo/ano |
+|-------|------------|----------:|
+| **estudaai.com.br** | Registro.br | **R$40** |
+| estudaai.com | Cloudflare Registrar | ~R$50 |
+| estuda.ai | Namecheap / GoDaddy | ~R$400–600 |
 
-| Serviço | Custo/mês |
-|---------|----------:|
+**Recomendação:** `estudaai.com.br` no Registro.br. Mais barato, .br passa mais confiança para o público brasileiro.
+
+**Onde contratar:** registro.br (requer CPF)
+
+---
+
+## O que você NÃO precisa contratar
+
+| O que parece necessário | Por que não precisa |
+|-------------------------|---------------------|
+| VPS (DigitalOcean, AWS EC2, Hetzner) | Supabase Edge Functions substitui |
+| Hosting pago para o frontend | GitHub Pages é gratuito e suficiente para HTML estático |
+| CDN pago | GitHub Pages já usa CDN global |
+| Servidor de e-mail | Supabase Auth já envia confirmação de cadastro |
+| Servidor Node.js/Python próprio | Toda lógica de servidor vai nas Edge Functions do Supabase |
+
+---
+
+## Planos do Estuda.AI
+
+| Plano | Preço | Valor mensal efetivo |
+|-------|-------|--------------------:|
+| Free | Gratuito | — |
+| **Premium Mensal** | **R$29,90/mês** | **R$29,90** |
+| **Premium Anual** | **R$239/ano** | **~R$19,92** (33% de desconto) |
+
+---
+
+## Projeção financeira
+
+### Fase 0 — Lançamento (até 50 usuários premium)
+
+| Item | Custo/mês |
+|------|----------:|
 | GitHub Pages | R$0 |
-| Supabase Free | R$0 |
-| Stripe (sem assinaturas ativas) | R$0 |
-| Anthropic API (50 usuários × R$0,50) | ~R$25 |
-| Domínio (amortizado/mês) | ~R$3,50 |
-| **TOTAL** | **~R$28,50/mês** |
-| **Receita (50 assinantes)** | **R$941/mês** |
-| **Margem** | **~97%** |
+| Supabase Pro | R$125 |
+| Anthropic (50 × R$0,50) | ~R$25 |
+| Stripe fees (50 × R$1,43) | ~R$72 |
+| Domínio (amortizado) | ~R$3,50 |
+| **Custo total** | **~R$225,50** |
+| **Receita bruta (50 × R$29,90)** | **R$1.495** |
+| **Margem líquida** | **~R$1.269 (~85%)** |
+| **Break-even** | **8 assinantes** |
 
 ### Fase 1 — Crescimento (50–500 usuários premium)
 
-| Serviço | Custo/mês |
-|---------|----------:|
-| GitHub Pages ou Vercel | R$0 |
-| Supabase Free (até ~400 usuários) | R$0 |
-| Anthropic API (500 usuários × R$0,50) | ~R$250 |
-| Stripe fees (500 × R$1,08) | ~R$540 |
+| Item | Custo/mês |
+|------|----------:|
+| Supabase Pro | R$125 |
+| Anthropic (500 × R$0,50) | ~R$250 |
+| Stripe fees (500 × R$1,43) | ~R$715 |
 | Domínio | ~R$3,50 |
-| **TOTAL** | **~R$793/mês** |
-| **Receita bruta (500 × R$19,90)** | **R$9.950/mês** |
-| **Margem líquida** | **~R$9.157/mês (~92%)** |
+| **Custo total** | **~R$1.093,50** |
+| **Receita bruta (500 × R$29,90)** | **R$14.950** |
+| **Margem líquida** | **~R$13.856 (~93%)** |
 
 ### Fase 2 — Escala (500–2000 usuários premium)
 
-| Serviço | Custo/mês |
-|---------|----------:|
-| Vercel Pro (analytics, maior CDN) | ~R$100 |
-| **Supabase Pro** ($25) | ~R$125 |
-| Anthropic API (2000 usuários × R$0,50) | ~R$1.000 |
-| Stripe fees (2000 × R$1,08) | ~R$2.160 |
-| **TOTAL** | **~R$3.385/mês** |
-| **Receita bruta** | **R$39.800/mês** |
-| **Margem líquida** | **~R$36.415/mês (~91%)** |
+| Item | Custo/mês |
+|------|----------:|
+| Vercel Pro (analytics + CDN melhorado) | ~R$100 |
+| Supabase Pro | R$125 |
+| Anthropic (2000 × R$0,50) | ~R$1.000 |
+| Stripe fees (2000 × R$1,43) | ~R$2.860 |
+| **Custo total** | **~R$4.085** |
+| **Receita bruta (2000 × R$29,90)** | **R$59.800** |
+| **Margem líquida** | **~R$55.715 (~93%)** |
 
 ---
 
 ## Checklist de produção
 
-### Obrigatório antes de abrir para usuários pagantes
+### Antes de aceitar pagamentos reais
 
 - [ ] Stripe: criar conta em stripe.com, verificar identidade (CPF/CNPJ)
-- [ ] Stripe: criar Product + Price (assinatura mensal R$19,90)
-- [ ] Supabase: criar Edge Function `stripe-webhook` (recebe eventos de pagamento)
+- [ ] Stripe: criar Product + Price (assinatura mensal R$29,90 e anual R$239)
+- [ ] Supabase: upgrade para plano Pro
+- [ ] Supabase: criar Edge Function `stripe-webhook` (processa eventos de pagamento)
 - [ ] Supabase: criar Edge Function `anthropic-proxy` (proxy da API Claude)
-- [ ] Supabase: adicionar coluna `plano` e `stripe_customer_id` na tabela `preferencias`
+- [ ] Supabase: adicionar colunas `plano_tipo` e `stripe_customer_id` na tabela `preferencias`
 - [ ] index.html: substituir `ativarPremiumDemo()` por redirect para Stripe Checkout
 - [ ] index.html: substituir chamada direta à Anthropic pelo proxy Supabase
-- [ ] Supabase: adicionar trigger/RLS para rate limiting de gerações no backend
-- [ ] GitHub: adicionar variáveis de ambiente no repositório (STRIPE_SECRET_KEY, ANTHROPIC_KEY)
-- [ ] Supabase: configurar secrets para Edge Functions (STRIPE_SECRET, ANTHROPIC_KEY, STRIPE_WEBHOOK_SECRET)
-- [ ] Domínio: apontar CNAME para `felipealima1984.github.io`
+- [ ] Supabase: adicionar trigger para rate limiting de gerações no backend
+- [ ] Supabase: configurar secrets (STRIPE_SECRET, ANTHROPIC_KEY, STRIPE_WEBHOOK_SECRET)
+- [ ] Domínio: registrar `estudaai.com.br` e apontar CNAME para `felipealima1984.github.io`
 - [ ] Supabase Auth: adicionar domínio personalizado em Redirect URLs
-- [ ] Stripe: configurar webhook URL para `https://[seu-projeto].supabase.co/functions/v1/stripe-webhook`
-- [ ] Testar fluxo completo: cadastro → paywall → checkout → webhook → premium ativo → geração via proxy
+- [ ] Stripe: configurar webhook URL para `https://[projeto].supabase.co/functions/v1/stripe-webhook`
+- [ ] Testar fluxo completo: cadastro → paywall → checkout Stripe → webhook → premium ativo → geração via proxy
 
 ### Boas práticas de segurança
 
-- [ ] Nunca expor `STRIPE_SECRET_KEY` no frontend (apenas `STRIPE_PUBLISHABLE_KEY`)
+- [ ] Nunca expor `STRIPE_SECRET_KEY` no frontend (só `STRIPE_PUBLISHABLE_KEY`)
 - [ ] Nunca expor `ANTHROPIC_KEY` no frontend (usar proxy)
 - [ ] Verificar `stripe-signature` em todo webhook recebido
 - [ ] RLS ativo em todas as tabelas do Supabase (já configurado)
 - [ ] HTTPS obrigatório (GitHub Pages já força)
-- [ ] Validar plano premium no backend antes de processar geração (não só no frontend)
+- [ ] Validar plano premium no backend antes de processar geração
 
 ---
 
-## Documentos de referência
+## Referências
 
-- [Supabase Edge Functions Quickstart](https://supabase.com/docs/guides/functions)
-- [Stripe Checkout — documentação](https://stripe.com/docs/checkout/quickstart)
-- [Stripe Webhooks — como configurar](https://stripe.com/docs/webhooks)
+- [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
+- [Stripe Checkout](https://stripe.com/docs/checkout/quickstart)
+- [Stripe Webhooks](https://stripe.com/docs/webhooks)
 - [Anthropic API — preços](https://www.anthropic.com/pricing)
 - [Supabase — preços](https://supabase.com/pricing)
-- [Registro.br — domínios .br](https://registro.br)
+- [Registro.br](https://registro.br)
