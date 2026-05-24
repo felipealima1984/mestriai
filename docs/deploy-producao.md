@@ -1,4 +1,4 @@
-# Estuda.AI — Guia de Deploy em Produção
+# Mestriai — Guia de Deploy em Produção
 
 **Última atualização:** 24/05/2026  
 **Público-alvo:** Felipe Lima (owner do projeto)
@@ -7,7 +7,7 @@
 
 ## Arquitetura em produção
 
-O Estuda.AI é uma SPA single-file (index.html). O frontend **não precisa de servidor pago** — fica no GitHub Pages gratuitamente. Todo o lado servidor é coberto pelo Supabase via Edge Functions.
+O Mestriai é uma SPA single-file (index.html). O frontend **não precisa de servidor pago** — fica no GitHub Pages gratuitamente. Todo o lado servidor é coberto pelo Supabase via Edge Functions.
 
 ```
 [Usuário]
@@ -93,11 +93,11 @@ Sem mensalidade — cobra só o que consumir.
 
 | Opção | Registrador | Custo/ano |
 |-------|------------|----------:|
-| **estudaai.com.br** | Registro.br | **R$40** |
-| estudaai.com | Cloudflare Registrar | ~R$50 |
-| estuda.ai | Namecheap / GoDaddy | ~R$400–600 |
+| **mestriai.com.br** | Registro.br | **R$40** |
+| mestriai.com | Cloudflare Registrar | ~R$50 |
+| mestriai.ai | Namecheap / GoDaddy | ~R$400–600 |
 
-**Recomendação:** `estudaai.com.br` no Registro.br. Mais barato, .br passa mais confiança para o público brasileiro.
+**Recomendação:** `mestriai.com.br` no Registro.br. Mais barato, .br passa mais confiança para o público brasileiro.
 
 **Onde contratar:** registro.br (requer CPF)
 
@@ -115,7 +115,7 @@ Sem mensalidade — cobra só o que consumir.
 
 ---
 
-## Planos do Estuda.AI
+## Planos do Mestriai
 
 | Plano | Preço | Valor mensal efetivo |
 |-------|-------|--------------------:|
@@ -181,7 +181,7 @@ Sem mensalidade — cobra só o que consumir.
 - [ ] index.html: substituir chamada direta à Anthropic pelo proxy Supabase
 - [ ] Supabase: adicionar trigger para rate limiting de gerações no backend
 - [ ] Supabase: configurar secrets (STRIPE_SECRET, ANTHROPIC_KEY, STRIPE_WEBHOOK_SECRET)
-- [ ] Domínio: registrar `estudaai.com.br` e apontar CNAME para `felipealima1984.github.io`
+- [ ] Domínio: registrar `mestriai.com.br` e apontar CNAME para `felipealima1984.github.io`
 - [ ] Supabase Auth: adicionar domínio personalizado em Redirect URLs
 - [ ] Stripe: configurar webhook URL para `https://[projeto].supabase.co/functions/v1/stripe-webhook`
 - [ ] Testar fluxo completo: cadastro → paywall → checkout Stripe → webhook → premium ativo → geração via proxy

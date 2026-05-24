@@ -1,4 +1,4 @@
-# Estuda.AI
+# Mestriai
 
 Plataforma web de estudos com IA para qualquer concurso ou matéria — CACD, Direito, OAB, concursos públicos ou estudo livre. Single-file, sem build, sem dependências de npm.
 
@@ -9,7 +9,7 @@ Hospedada em **GitHub Pages** — sem backend próprio.
 ## Funcionalidades
 
 ### Instalável como app (PWA)
-O Estuda.AI é um Progressive Web App. No Chrome/Edge, clique em **"Instalar"** na barra de endereço para adicionar à tela inicial do celular ou ao desktop — abre sem barra de navegação, como um app nativo. No Safari (iOS), use **Compartilhar → Adicionar à Tela de Início**.
+O Mestriai é um Progressive Web App. No Chrome/Edge, clique em **"Instalar"** na barra de endereço para adicionar à tela inicial do celular ou ao desktop — abre sem barra de navegação, como um app nativo. No Safari (iOS), use **Compartilhar → Adicionar à Tela de Início**.
 
 Funciona **offline**: o app shell (HTML/CSS/JS) é cacheado pelo Service Worker. Sem internet, você ainda pode navegar, revisar flashcards SM-2 e ler historinhas salvas. Geração de conteúdo e sync Supabase requerem rede.
 
@@ -123,7 +123,7 @@ Arquivo principal: `index.html` (~4300 linhas) — sem `package.json`, sem build
 ## Estrutura do repositório
 
 ```
-estuda-ai/
+mestriai/
 ├── index.html                        # App completo (single-file)
 ├── manifest.json                     # PWA manifest (nome, ícones, display, theme_color)
 ├── sw.js                             # Service Worker (cache-first, fallback offline)
@@ -232,7 +232,7 @@ git push origin main
 # Repositório → Settings → Pages → Branch: main → Save
 ```
 
-URL pública: `https://felipealima1984.github.io/estuda-ai`
+URL pública: `https://felipealima1984.github.io/mestriai`
 
 Lembre de adicionar essa URL em **Supabase → Authentication → URL Configuration → Redirect URLs**.
 
@@ -258,15 +258,15 @@ Todas as tabelas têm **Row Level Security** ativo — cada usuário acessa apen
 
 | Chave | Conteúdo |
 |-------|----------|
-| `estuda_api_key` | Chave Anthropic |
-| `estuda_materias` | Matérias e tópicos |
-| `estuda_periodos` | Períodos cadastrados |
-| `estuda_periodo_ativo` | ID do período ativo |
-| `estuda_stats` | Contadores |
-| `estuda_historico` | Histórico de atividades |
-| `estuda_historinhas` | Até 50 historinhas salvas |
-| `estuda_materiais_salvos` | Materiais gerados de PDF/texto |
-| `estuda_theme` | Tema visual |
+| `mestriai_api_key` | Chave Anthropic |
+| `mestriai_materias` | Matérias e tópicos |
+| `mestriai_periodos` | Períodos cadastrados |
+| `mestriai_periodo_ativo` | ID do período ativo |
+| `mestriai_stats` | Contadores |
+| `mestriai_historico` | Histórico de atividades |
+| `mestriai_historinhas` | Até 50 historinhas salvas |
+| `mestriai_materiais_salvos` | Materiais gerados de PDF/texto |
+| `mestriai_theme` | Tema visual |
 | `sb_url` / `sb_key` | Credenciais Supabase |
 
 Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
@@ -276,11 +276,11 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 ## Histórico de versões
 
 ### v1.12.0 — Onboarding wizard para novos usuários
-- Wizard de 3 passos exibido automaticamente na primeira abertura (sem `estuda_programas` no localStorage)
+- Wizard de 3 passos exibido automaticamente na primeira abertura (sem `mestriai_programas` no localStorage)
 - **Passo 1**: escolha do tipo de programa (Concurso / Graduação / Pós-graduação / Estudo livre) + nome + banca
 - **Passo 2**: nome da matéria + tópicos principais (um por linha, vão para `topicos.n1`)
 - **Passo 3**: confirmação do que foi criado + botão "Gerar primeira historinha" ou "Explorar sozinho"
-- Botão "Pular" disponível em qualquer passo; `estuda_onboarding_done` impede re-exibição
+- Botão "Pular" disponível em qualquer passo; `mestriai_onboarding_done` impede re-exibição
 - Programa criado é automaticamente definido como `programaAtivoId`; matéria vai direto para revisão
 - CSS responsivo: overlay `z-index:600`, card até 460px, scroll interno em telas pequenas
 - `tests.js` seção 26: 40 asserções cobrindo funções, DOM, seleção de tipo, render de steps e validação de campos
@@ -294,11 +294,11 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 - SW: novo handler `notificationclick` foca janela aberta ou abre o app ao clicar na notificação
 - SW: handler `SHOW_NOTIFICATION` chama `self.registration.showNotification()` com título, corpo, ícone e tag
 - Verificação horária via `setInterval` para apps que ficam abertos em segundo plano
-- Cache SW atualizado para `estudaai-v1.10.0`
+- Cache SW atualizado para `mestriai-v1.10.0`
 - `tests.js` seção 25: 20 asserções cobrindo funções, #btn-notif, contagem de cards e estado do botão
 
 ### v1.10.0 — Logo com imagem (adaptação por tema)
-- Textos "Estuda.AI" no cabeçalho da sidebar e na tela de login substituídos por `<img>` tags
+- Textos "Mestriai" no cabeçalho da sidebar e na tela de login substituídos por `<img>` tags
 - `img/logo_fundo_preto.png` usado no tema escuro; `img/logo_fundo_transparente.png` nos temas cinza e claro
 - `atualizarLogoTema(t)` troca `src` dos elementos `#logo-sidebar` e `#logo-auth` ao mudar tema
 - `setTheme()` chama `atualizarLogoTema()` automaticamente a cada troca de tema
@@ -308,7 +308,7 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 - `manifest.json` com nome, ícones, `display: standalone`, `theme_color: #c8a96e` e atalhos de teclado (Historinha e Simulado)
 - Ícones SVG em `icons/icon-192.svg` (any) e `icons/icon-512.svg` (any maskable — safe zone 80%)
 - Service Worker (`sw.js`) com estratégia cache-first: pré-cacheia o app shell na instalação, cacheia CDN externos dinamicamente (jsdelivr, googleapis), nunca cacheia chamadas de API (Anthropic, Supabase)
-- Cache versionado (`estudaai-v1.9.0`) — `activate` deleta caches antigos e chama `clients.claim()`; `install` chama `skipWaiting()` para transição rápida
+- Cache versionado (`mestriai-v1.9.0`) — `activate` deleta caches antigos e chama `clients.claim()`; `install` chama `skipWaiting()` para transição rápida
 - Fallback offline: `navigate` sem rede devolve `index.html` do cache — app abre mesmo sem conexão
 - Meta tags iOS: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, `apple-mobile-web-app-title`, `apple-touch-icon`
 - Banner discreto de "Nova versão disponível" aparece quando um SW atualizado está esperando; botão Atualizar envia `SKIP_WAITING` e recarrega
@@ -342,7 +342,7 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 - `tests.js` atualizado: nova seção 20 com 15 asserções cobrindo export, round-trip, isolamento de IDs, importação de matérias e validação de formatos inválidos
 
 ### v1.5.0 — Diagnóstico de lacunas de conhecimento
-- Novo sistema de rastreamento: `verificarSimulado()` registra acertos e erros por matéria no objeto `lacunas` (persiste em `localStorage.estuda_lacunas`)
+- Novo sistema de rastreamento: `verificarSimulado()` registra acertos e erros por matéria no objeto `lacunas` (persiste em `localStorage.mestriai_lacunas`)
 - Nova função `renderDiagnostico(containerId, progId)` exibe ranking das matérias com maior taxa de erro, com barra visual colorida (verde → amarelo → vermelho) e botões de ação direta
 - Botão **"↺ Historinha"** navega para o painel Historinha com a matéria pré-selecionada
 - Botão **"⊛ Revisar SM-2"** navega para Revisão e carrega o baralho da matéria (exibido só quando existe baralho)

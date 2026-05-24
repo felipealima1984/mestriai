@@ -1,5 +1,5 @@
 /**
- * Estuda.AI — Smoke Tests v2
+ * Mestriai — Smoke Tests v2
  *
  * Execução: abra o app no navegador, cole todo este arquivo no console e pressione Enter.
  * Requer: página carregada com dados (ao menos um programa cadastrado).
@@ -148,7 +148,7 @@
   ok('getPeriodoAtivo() não lança exceção',   (() => { try { getPeriodoAtivo(); return true; } catch { return false; } })());
   noThrow('salvarPeriodosLocal() persiste sem erro', () => {
     salvarPeriodosLocal();
-    const salvo = JSON.parse(localStorage.getItem('estuda_periodos') || '[]');
+    const salvo = JSON.parse(localStorage.getItem('mestriai_periodos') || '[]');
     if (!Array.isArray(salvo)) throw new Error('periodos não é array');
   });
   endSection();
@@ -158,24 +158,24 @@
   section('Persistência localStorage');
   noThrow('salvarProgramas() persiste array válido', () => {
     salvarProgramas();
-    const arr = JSON.parse(localStorage.getItem('estuda_programas') || 'null');
+    const arr = JSON.parse(localStorage.getItem('mestriai_programas') || 'null');
     if (!Array.isArray(arr)) throw new Error('programas não é array');
   });
   noThrow('salvarMaterias() persiste array válido', () => {
     salvarMaterias();
-    const arr = JSON.parse(localStorage.getItem('estuda_materias') || 'null');
+    const arr = JSON.parse(localStorage.getItem('mestriai_materias') || 'null');
     if (!Array.isArray(arr)) throw new Error('materias não é array');
   });
   noThrow('salvarStats() persiste sem erro', () => salvarStats());
   noThrow('salvarGamification() persiste sem erro', () => salvarGamification());
   noThrow('salvarBaralhos() persiste array válido', () => {
     salvarBaralhos();
-    const arr = JSON.parse(localStorage.getItem('estuda_baralhos') || 'null');
+    const arr = JSON.parse(localStorage.getItem('mestriai_baralhos') || 'null');
     if (!Array.isArray(arr)) throw new Error('baralhos não é array');
   });
   noThrow('salvarPlanoLocal() persiste objeto com tipo', () => {
     salvarPlanoLocal();
-    const p = JSON.parse(localStorage.getItem('estuda_plano') || 'null');
+    const p = JSON.parse(localStorage.getItem('mestriai_plano') || 'null');
     if (!p || !p.tipo) throw new Error('plano.tipo ausente');
   });
   endSection();
@@ -259,7 +259,7 @@
   const xpAntes = gamification.xp;
   ganharXP(10, 'Teste unitário');
   ok('gamification.xp aumenta em 10', gamification.xp === xpAntes + 10);
-  ok('valor persiste em localStorage', JSON.parse(localStorage.getItem('estuda_gamification') || '{}').xp === gamification.xp);
+  ok('valor persiste em localStorage', JSON.parse(localStorage.getItem('mestriai_gamification') || '{}').xp === gamification.xp);
   gamification.xp = xpAntes; salvarGamification(); // restaurar
   endSection();
 
@@ -387,7 +387,7 @@
   ok('historico[0].data é string', typeof historico[0].data === 'string');
   // restaurar
   historico.length = 0; histAntes.forEach(h => historico.push(h));
-  localStorage.setItem('estuda_historico', JSON.stringify(historico));
+  localStorage.setItem('mestriai_historico', JSON.stringify(historico));
   endSection();
 
   // ─── 13. Contexto IA ─────────────────────────────────────────────────────────
@@ -423,10 +423,10 @@
   // ─── 14. Tema ────────────────────────────────────────────────────────────────
 
   section('setTheme()');
-  const themeAntes = localStorage.getItem('estuda_theme') || 'dark';
+  const themeAntes = localStorage.getItem('mestriai_theme') || 'dark';
   noThrow('setTheme("gray") não lança', () => setTheme('gray'));
   ok('theme-gray adicionado ao body', document.body.classList.contains('theme-gray'));
-  ok('localStorage registra tema gray', localStorage.getItem('estuda_theme') === 'gray');
+  ok('localStorage registra tema gray', localStorage.getItem('mestriai_theme') === 'gray');
   noThrow('setTheme("light") não lança', () => setTheme('light'));
   ok('theme-light adicionado ao body', document.body.classList.contains('theme-light'));
   noThrow('setTheme("dark") não lança', () => setTheme('dark'));
@@ -495,7 +495,7 @@
   // salvarLacunas persiste objeto
   noThrow('salvarLacunas() persiste sem erro', () => {
     salvarLacunas();
-    const salvo = JSON.parse(localStorage.getItem('estuda_lacunas') || 'null');
+    const salvo = JSON.parse(localStorage.getItem('mestriai_lacunas') || 'null');
     if (typeof salvo !== 'object' || salvo === null) throw new Error('lacunas não é objeto');
   });
 
@@ -537,7 +537,7 @@
     const pid = matTeste.programaId || matTeste.frente;
     lacunas[matTeste.id] = { nome: matTeste.nome, programaId: pid, acertos: 3, erros: 7 };
     salvarLacunas();
-    const salvo = JSON.parse(localStorage.getItem('estuda_lacunas') || '{}');
+    const salvo = JSON.parse(localStorage.getItem('mestriai_lacunas') || '{}');
     ok('lacunas persistidas com acertos/erros corretos', salvo[matTeste.id]?.erros === 7 && salvo[matTeste.id]?.acertos === 3);
     delete lacunas[matTeste.id];
     salvarLacunas();
@@ -801,7 +801,7 @@
 
   const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
   ok('meta apple-mobile-web-app-title existe',     !!appleTitle);
-  ok('apple-mobile-web-app-title = "Estuda.AI"',  appleTitle && appleTitle.content === 'Estuda.AI');
+  ok('apple-mobile-web-app-title = "Mestriai"',  appleTitle && appleTitle.content === 'Mestriai');
 
   const appleTouchIcon = document.querySelector('link[rel="apple-touch-icon"]');
   ok('apple-touch-icon aponta para ícone',         !!appleTouchIcon);
@@ -848,8 +848,8 @@
   ok('logo-sidebar é um <img>', sidebarLogo && sidebarLogo.tagName === 'IMG');
   ok('logo-auth é um <img>', authLogo && authLogo.tagName === 'IMG');
 
-  ok('logo-sidebar tem alt="Estuda.AI"', sidebarLogo && sidebarLogo.alt === 'Estuda.AI');
-  ok('logo-auth tem alt="Estuda.AI"',    authLogo && authLogo.alt === 'Estuda.AI');
+  ok('logo-sidebar tem alt="Mestriai"', sidebarLogo && sidebarLogo.alt === 'Mestriai');
+  ok('logo-auth tem alt="Mestriai"',    authLogo && authLogo.alt === 'Mestriai');
 
   ok('atualizarLogoTema é uma função', typeof atualizarLogoTema === 'function');
 
@@ -867,7 +867,7 @@
   ok('tema light → auth usa logo_fundo_transparente',    (document.getElementById('logo-auth')||{}).src && document.getElementById('logo-auth').src.includes('logo_fundo_transparente'));
 
   // Restaurar tema original
-  setTheme(localStorage.getItem('estuda_theme') || 'dark');
+  setTheme(localStorage.getItem('mestriai_theme') || 'dark');
 
   endSection();
 
@@ -913,11 +913,11 @@
 
   // desativarNotificacoes — limpa localStorage sem lançar
   noThrow('desativarNotificacoes() não lança', () => {
-    localStorage.setItem('estuda_notif_enabled', '1');
-    localStorage.setItem('estuda_notif_last_date', 'Thu Jan 01 2026');
+    localStorage.setItem('mestriai_notif_enabled', '1');
+    localStorage.setItem('mestriai_notif_last_date', 'Thu Jan 01 2026');
     desativarNotificacoes();
-    ok('estuda_notif_enabled removido após desativar', !localStorage.getItem('estuda_notif_enabled'));
-    ok('estuda_notif_last_date removido após desativar', !localStorage.getItem('estuda_notif_last_date'));
+    ok('mestriai_notif_enabled removido após desativar', !localStorage.getItem('mestriai_notif_enabled'));
+    ok('mestriai_notif_last_date removido após desativar', !localStorage.getItem('mestriai_notif_last_date'));
   });
 
   // verificarNotificacoes sem permissão — não lança
@@ -927,7 +927,7 @@
 
   // atualizarBotaoNotif sem permissão — botão mostra OFF
   noThrow('atualizarBotaoNotif() reflete estado OFF', () => {
-    localStorage.removeItem('estuda_notif_enabled');
+    localStorage.removeItem('mestriai_notif_enabled');
     atualizarBotaoNotif();
     const btn = document.getElementById('btn-notif');
     ok('botão mostra OFF quando desativado', btn && btn.textContent.includes('OFF'));
@@ -963,13 +963,13 @@
 
   // initOnboarding — não mostra se onboarding_done está setado
   noThrow('initOnboarding() não mostra overlay se done', () => {
-    const prev = localStorage.getItem('estuda_onboarding_done');
-    localStorage.setItem('estuda_onboarding_done', '1');
+    const prev = localStorage.getItem('mestriai_onboarding_done');
+    localStorage.setItem('mestriai_onboarding_done', '1');
     document.getElementById('onb-overlay').style.display = 'none';
     initOnboarding();
     ok('overlay permanece oculto com done=1', document.getElementById('onb-overlay').style.display === 'none');
-    if (prev === null) localStorage.removeItem('estuda_onboarding_done');
-    else localStorage.setItem('estuda_onboarding_done', prev);
+    if (prev === null) localStorage.removeItem('mestriai_onboarding_done');
+    else localStorage.setItem('mestriai_onboarding_done', prev);
   });
 
   // onbSelecionarTipo — alterna classe sel
@@ -993,12 +993,12 @@
 
   // onbSkip — fecha overlay e marca done
   noThrow('onbSkip() fecha overlay e seta done', () => {
-    localStorage.removeItem('estuda_onboarding_done');
+    localStorage.removeItem('mestriai_onboarding_done');
     document.getElementById('onb-overlay').style.display = 'flex';
     onbSkip();
     ok('overlay oculto após skip', document.getElementById('onb-overlay').style.display === 'none');
-    ok('estuda_onboarding_done setado após skip', localStorage.getItem('estuda_onboarding_done') === '1');
-    localStorage.removeItem('estuda_onboarding_done');
+    ok('mestriai_onboarding_done setado após skip', localStorage.getItem('mestriai_onboarding_done') === '1');
+    localStorage.removeItem('mestriai_onboarding_done');
   });
 
   // onbNext passo 1 sem nome — exige nome
@@ -1052,11 +1052,11 @@
 
   // salvarRedacoesHist persiste no localStorage
   noThrow('salvarRedacoesHist() persiste no localStorage', () => {
-    const prev = JSON.parse(localStorage.getItem('estuda_redacoes_hist') || '[]');
+    const prev = JSON.parse(localStorage.getItem('mestriai_redacoes_hist') || '[]');
     const prevHist = [...redacoesHist];
     redacoesHist = [{ tema: 'Teste', nota: 9, texto: 'x', correcao: 'y', data: new Date().toISOString() }];
     salvarRedacoesHist();
-    const lido = JSON.parse(localStorage.getItem('estuda_redacoes_hist') || '[]');
+    const lido = JSON.parse(localStorage.getItem('mestriai_redacoes_hist') || '[]');
     ok('localStorage contém o item salvo', lido.length === 1 && lido[0].tema === 'Teste' && lido[0].nota === 9);
     redacoesHist = prevHist;
     salvarRedacoesHist();
@@ -1147,7 +1147,7 @@
     excluirRedacaoHistorico(fakeEvt, 0);
     ok('item 0 removido — restou 1', redacoesHist.length === 1);
     ok('item restante é o B',        redacoesHist[0].tema === 'B');
-    const lido = JSON.parse(localStorage.getItem('estuda_redacoes_hist') || '[]');
+    const lido = JSON.parse(localStorage.getItem('mestriai_redacoes_hist') || '[]');
     ok('localStorage atualizado após exclusão', lido.length === 1 && lido[0].tema === 'B');
     redacoesHist = prev;
     salvarRedacoesHist();
@@ -1241,7 +1241,7 @@
     const area = document.getElementById('print-area');
     ok('#print-area tem o título', area.innerHTML.includes('Teste de Exportação'));
     ok('#print-area tem o conteúdo', area.innerHTML.includes('Conteúdo de teste'));
-    ok('#print-area tem a marca Estuda.AI', area.innerHTML.includes('Estuda.AI'));
+    ok('#print-area tem a marca Mestriai', area.innerHTML.includes('Mestriai'));
     area.innerHTML = '';  // limpar
     window.print = origPrint;
   });

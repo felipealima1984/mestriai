@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Estuda.AI — CACD & Direito</title>
+<title>Mestriai — Estude qualquer matéria com IA</title>
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#c8a96e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Estuda.AI">
+<meta name="apple-mobile-web-app-title" content="Mestriai">
+<meta name="description" content="Mestriai — Plataforma de estudos com IA para qualquer concurso ou matéria">
 <link rel="apple-touch-icon" href="icons/icon-192.svg">
 <meta name="description" content="Plataforma de estudos com IA para qualquer concurso ou matéria">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -62,6 +63,8 @@ body.theme-gray::before,body.theme-light::before{background-image:none;}
 .logo-mark span{color:var(--cacd);}
 .logo-sub{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.5px;text-transform:uppercase;}
 .logo-img--sidebar{height:38px;width:auto;display:block;object-fit:contain;}
+.logo-text{font-size:22px;font-weight:700;letter-spacing:-.5px;color:var(--accent);font-family:var(--font-body);}
+.logo-text--auth{font-size:32px;font-weight:700;letter-spacing:-.5px;color:var(--accent);font-family:var(--font-body);margin-bottom:8px;display:block;}
 .nav-section{padding:0 12px;margin-bottom:6px;}
 .nav-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:0 8px;margin-bottom:5px;}
 .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--muted);transition:all .15s;margin-bottom:2px;border:1px solid transparent;}
@@ -565,8 +568,8 @@ mjx-container svg { color: var(--text); }
 <!-- TELA DE AUTH -->
 <div class="auth-screen" id="auth-screen">
   <div class="auth-card">
-    <img class="logo-img--auth" id="logo-auth" src="img/logo_fundo_preto.png" alt="Estuda.AI">
-    <div class="auth-sub">CACD & Direito — faça login para sincronizar seus dados</div>
+    <span class="logo-text--auth" id="logo-auth">Mestriai</span>
+    <div class="auth-sub">Estude qualquer matéria com IA — faça login para sincronizar seus dados</div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="atab-login" onclick="switchAuthTab('login')">Entrar</button>
       <button class="auth-tab" id="atab-signup" onclick="switchAuthTab('signup')">Criar conta</button>
@@ -599,7 +602,7 @@ mjx-container svg { color: var(--text); }
 
     <!-- PASSO 1 — Criar programa -->
     <div id="onb-step-1">
-      <div class="onb-titulo">Bem-vindo ao Estuda.AI!</div>
+      <div class="onb-titulo">Bem-vindo ao Mestriai!</div>
       <div class="onb-sub">Vamos configurar seu primeiro programa de estudos em 3 passos rápidos.</div>
       <div class="onb-tipo-grid">
         <button class="onb-tipo-btn sel" id="onbt-concurso"    onclick="onbSelecionarTipo('concurso')">🏆 Concurso</button>
@@ -671,7 +674,7 @@ mjx-container svg { color: var(--text); }
     <button class="logout-btn" onclick="logout()" title="Sair">↩</button>
   </div>
   <div class="logo" id="logo-block">
-    <img class="logo-img--sidebar" id="logo-sidebar" src="img/logo_fundo_preto.png" alt="Estuda.AI">
+    <span class="logo-text" id="logo-sidebar">Mestriai</span>
     <div class="logo-sub" id="logo-sub">Carregando...</div>
   </div>
   <div class="nav-section">
@@ -1718,8 +1721,8 @@ const MATERIAS_DEFAULT = [
 // ============================================================
 // ESTADO PRINCIPAL
 // ============================================================
-let programas = JSON.parse(localStorage.getItem('estuda_programas') || 'null') || PROGRAMAS_DEFAULT;
-let programaAtivoId = localStorage.getItem('estuda_programa_ativo') || 'prog-cacd';
+let programas = JSON.parse(localStorage.getItem('mestriai_programas') || 'null') || PROGRAMAS_DEFAULT;
+let programaAtivoId = localStorage.getItem('mestriai_programa_ativo') || 'prog-cacd';
 let modo = programaAtivoId; // modo agora é o ID do programa ativo
 let matTabAtual = programaAtivoId;
 let simTabAtual = programaAtivoId;
@@ -1728,19 +1731,19 @@ let materiaSelecionadaId = null;
 let editandoId = null;
 let editandoProgramaId = null;
 let tipoProgramaSelecionado = 'concurso';
-let apiKey = localStorage.getItem('estuda_api_key') || '';
-let stats = JSON.parse(localStorage.getItem('estuda_stats') || '{"historinhas":0,"questoes":0,"acertos":0,"tentativas":0,"redacoes":0}');
-let historico = JSON.parse(localStorage.getItem('estuda_historico') || '[]');
-let materias = JSON.parse(localStorage.getItem('estuda_materias') || 'null') || MATERIAS_DEFAULT;
+let apiKey = localStorage.getItem('mestriai_api_key') || '';
+let stats = JSON.parse(localStorage.getItem('mestriai_stats') || '{"historinhas":0,"questoes":0,"acertos":0,"tentativas":0,"redacoes":0}');
+let historico = JSON.parse(localStorage.getItem('mestriai_historico') || '[]');
+let materias = JSON.parse(localStorage.getItem('mestriai_materias') || 'null') || MATERIAS_DEFAULT;
 let simQuestoes = [], simRespostas = {}, simGabarito = {};
 let simMateriaIdAtual = null;
-let lacunas = JSON.parse(localStorage.getItem('estuda_lacunas') || '{}');
-function salvarLacunas() { localStorage.setItem('estuda_lacunas', JSON.stringify(lacunas)); }
+let lacunas = JSON.parse(localStorage.getItem('mestriai_lacunas') || '{}');
+function salvarLacunas() { localStorage.setItem('mestriai_lacunas', JSON.stringify(lacunas)); }
 
 // --- Helpers de programa ---
 function salvarProgramas() {
-  localStorage.setItem('estuda_programas', JSON.stringify(programas));
-  localStorage.setItem('estuda_programa_ativo', programaAtivoId);
+  localStorage.setItem('mestriai_programas', JSON.stringify(programas));
+  localStorage.setItem('mestriai_programa_ativo', programaAtivoId);
 }
 function getPrograma(id) { return programas.find(p => p.id === id); }
 function getProgramaAtivo() { return getPrograma(programaAtivoId) || programas[0]; }
@@ -1748,7 +1751,7 @@ function isConcurso(prog) { return !prog || prog.tipo === 'concurso' || prog.tip
 function hasUnidades(prog) { return prog && (prog.tipo === 'graduacao' || prog.tipo === 'posgraduacao'); }
 
 // --- Helpers de matéria ---
-function salvarMaterias() { localStorage.setItem('estuda_materias', JSON.stringify(materias)); }
+function salvarMaterias() { localStorage.setItem('mestriai_materias', JSON.stringify(materias)); }
 function getMaterias(progId) {
   const id = progId || programaAtivoId;
   let lista = materias.filter(m => m.programaId === id || m.frente === id);
@@ -1790,13 +1793,13 @@ function isConcursoId(progId) {
 // ============================================================
 // PERÍODOS
 // ============================================================
-let periodos = JSON.parse(localStorage.getItem('estuda_periodos') || '[]');
-let periodoAtivo = localStorage.getItem('estuda_periodo_ativo') || null;
+let periodos = JSON.parse(localStorage.getItem('mestriai_periodos') || '[]');
+let periodoAtivo = localStorage.getItem('mestriai_periodo_ativo') || null;
 let editandoPeriodoId = null;
 
 function salvarPeriodosLocal() {
-  localStorage.setItem('estuda_periodos', JSON.stringify(periodos));
-  localStorage.setItem('estuda_periodo_ativo', periodoAtivo || '');
+  localStorage.setItem('mestriai_periodos', JSON.stringify(periodos));
+  localStorage.setItem('mestriai_periodo_ativo', periodoAtivo || '');
 }
 function getPeriodo(id) { return periodos.find(p => p.id === id); }
 function getPeriodoAtivo() { return periodos.find(p => p.id === periodoAtivo); }
@@ -2060,7 +2063,7 @@ function togglePeriodoFieldModal() {
 // INIT
 // ============================================================
 window.onload = () => {
-  const t = localStorage.getItem('estuda_theme') || 'dark';
+  const t = localStorage.getItem('mestriai_theme') || 'dark';
   setTheme(t);
   renderStats();
   renderHistorico();
@@ -2850,7 +2853,7 @@ function atualizarWordCount(){
 // ============================================================
 // STATS / HISTÓRICO / PROGRESSO
 // ============================================================
-function salvarStats(){localStorage.setItem('estuda_stats',JSON.stringify(stats));renderStats();}
+function salvarStats(){localStorage.setItem('mestriai_stats',JSON.stringify(stats));renderStats();}
 
 function renderStats(){
   // Stats globais (usados internamente)
@@ -2862,7 +2865,7 @@ function renderStats(){
 function adicionarHistorico(tipo,frente,detalhe){
   historico.unshift({tipo,frente,detalhe,data:new Date().toLocaleDateString('pt-BR')});
   if(historico.length>30)historico.pop();
-  localStorage.setItem('estuda_historico',JSON.stringify(historico));
+  localStorage.setItem('mestriai_historico',JSON.stringify(historico));
   renderHistorico();
 }
 
@@ -2907,17 +2910,10 @@ function setTheme(t){
   if(t==='gray')document.body.classList.add('theme-gray');
   if(t==='light')document.body.classList.add('theme-light');
   ['dark','gray','light'].forEach(n=>document.getElementById('tbtn-'+n).classList.toggle('active',n===t));
-  localStorage.setItem('estuda_theme',t);
-  atualizarLogoTema(t);
+  localStorage.setItem('mestriai_theme',t);
 }
 
-function atualizarLogoTema(t){
-  const src = (t==='dark') ? 'img/logo_fundo_preto.png' : 'img/logo_fundo_transparente.png';
-  const s = document.getElementById('logo-sidebar');
-  const a = document.getElementById('logo-auth');
-  if(s) s.src = src;
-  if(a) a.src = src;
-}
+function atualizarLogoTema(t){ /* logos removidas temporariamente — aguardando assets */ }
 
 function openSetup(){document.getElementById('modal-setup').classList.add('visible');}
 function closeSetup(){document.getElementById('modal-setup').classList.remove('visible');}
@@ -2925,7 +2921,7 @@ function salvarApiKey(){
   const k=document.getElementById('api-key-input').value.trim();
   if(!k.startsWith('sk-ant-')){toast('Chave inválida — deve começar com sk-ant-');return;}
   apiKey=k;
-  localStorage.setItem('estuda_api_key',k);
+  localStorage.setItem('mestriai_api_key',k);
   document.getElementById('no-key-warning').style.display='none';
   closeSetup();
   toast('✓ Chave salva');
@@ -2933,9 +2929,9 @@ function salvarApiKey(){
 
 function salvarHistorinha(){
   const txt=document.getElementById('result-hist-text').textContent;
-  const saved=JSON.parse(localStorage.getItem('estuda_historinhas')||'[]');
+  const saved=JSON.parse(localStorage.getItem('mestriai_historinhas')||'[]');
   saved.unshift({texto:txt,data:new Date().toISOString()});
-  localStorage.setItem('estuda_historinhas',JSON.stringify(saved.slice(0,50)));
+  localStorage.setItem('mestriai_historinhas',JSON.stringify(saved.slice(0,50)));
   toast('✓ Historinha salva');
 }
 
@@ -2950,7 +2946,7 @@ function copiarTexto(id){
 let pdfTextoExtraido = '';
 let genOptSelecionada = 'historinha';
 let materialGeradoAtual = null;
-let materiaisSalvos = JSON.parse(localStorage.getItem('estuda_materiais_salvos') || '[]');
+let materiaisSalvos = JSON.parse(localStorage.getItem('mestriai_materiais_salvos') || '[]');
 
 function switchMatPanel(p) {
   ['upload','salvos'].forEach(x => {
@@ -3204,7 +3200,7 @@ function salvarMaterialGerado() {
   if (!materialGeradoAtual) return;
   materiaisSalvos.unshift(materialGeradoAtual);
   if (materiaisSalvos.length > 50) materiaisSalvos.pop();
-  localStorage.setItem('estuda_materiais_salvos', JSON.stringify(materiaisSalvos));
+  localStorage.setItem('mestriai_materiais_salvos', JSON.stringify(materiaisSalvos));
   toast('✓ Material salvo');
 }
 
@@ -3271,7 +3267,7 @@ function visualizarMaterialSalvo(i) {
 
 function excluirMaterialSalvo(i) {
   materiaisSalvos.splice(i, 1);
-  localStorage.setItem('estuda_materiais_salvos', JSON.stringify(materiaisSalvos));
+  localStorage.setItem('mestriai_materiais_salvos', JSON.stringify(materiaisSalvos));
   renderMateriaisSalvos();
   toast('Material excluído');
 }
@@ -3288,8 +3284,8 @@ function toast(msg,dur=3000){
 // ============================================================
 
 // --- ESTADO ---
-let gamification = JSON.parse(localStorage.getItem('estuda_gamification') || '{"xp":0,"streak":0,"lastStudyDate":"","cardsHoje":0,"diasEstudados":[]}');
-let baralhos = JSON.parse(localStorage.getItem('estuda_baralhos') || '[]');
+let gamification = JSON.parse(localStorage.getItem('mestriai_gamification') || '{"xp":0,"streak":0,"lastStudyDate":"","cardsHoje":0,"diasEstudados":[]}');
+let baralhos = JSON.parse(localStorage.getItem('mestriai_baralhos') || '[]');
 let quizTipo = 'mc';
 let revDeck = null;
 let revFila = [];
@@ -3300,8 +3296,8 @@ let quizIdx = 0;
 let quizAcertos = 0;
 let quizRespondida = false;
 
-function salvarGamification() { localStorage.setItem('estuda_gamification', JSON.stringify(gamification)); }
-function salvarBaralhos() { localStorage.setItem('estuda_baralhos', JSON.stringify(baralhos)); }
+function salvarGamification() { localStorage.setItem('mestriai_gamification', JSON.stringify(gamification)); }
+function salvarBaralhos() { localStorage.setItem('mestriai_baralhos', JSON.stringify(baralhos)); }
 
 // --- NÍVEIS ---
 const NIVEIS = [
@@ -3762,7 +3758,7 @@ salvarMaterialGerado = function() {
   // Salvar material
   materiaisSalvos.unshift(materialGeradoAtual);
   if (materiaisSalvos.length > 50) materiaisSalvos.pop();
-  localStorage.setItem('estuda_materiais_salvos', JSON.stringify(materiaisSalvos));
+  localStorage.setItem('mestriai_materiais_salvos', JSON.stringify(materiaisSalvos));
   syncMaterialSalvo(materialGeradoAtual);
   // Se for flashcards, criar baralho SM-2
   if (materialGeradoAtual.tipo === 'flashcards') {
@@ -3902,8 +3898,8 @@ async function carregarDoSupabase() {
       programas = progs.map(p => ({ id: p.id, nome: p.nome, tipo: p.tipo, instituicao: p.instituicao||'', ano: p.ano||'', ativo: p.ativo }));
       const ativo = progs.find(p => p.ativo);
       if (ativo) { programaAtivoId = ativo.id; modo = ativo.id; }
-      localStorage.setItem('estuda_programas', JSON.stringify(programas));
-      localStorage.setItem('estuda_programa_ativo', programaAtivoId);
+      localStorage.setItem('mestriai_programas', JSON.stringify(programas));
+      localStorage.setItem('mestriai_programa_ativo', programaAtivoId);
     }
     // Períodos
     const { data: pers } = await sb.from('periodos').select('*').eq('user_id', currentUser.id).order('numero');
@@ -3923,25 +3919,25 @@ async function carregarDoSupabase() {
         periodoId: m.periodo_id||null,
         topicos: { n1: m.topicos_n1||[], n2: m.topicos_n2||[], n3: m.topicos_n3||[] }
       }));
-      localStorage.setItem('estuda_materias', JSON.stringify(materias));
+      localStorage.setItem('mestriai_materias', JSON.stringify(materias));
     }
     // Stats
     const { data: st } = await sb.from('stats').select('*').eq('user_id', currentUser.id).single();
     if (st) {
       stats = { historinhas: st.historinhas, questoes: st.questoes, acertos: st.acertos, tentativas: st.tentativas, redacoes: st.redacoes };
-      localStorage.setItem('estuda_stats', JSON.stringify(stats));
+      localStorage.setItem('mestriai_stats', JSON.stringify(stats));
     }
     // Histórico
     const { data: hist } = await sb.from('historico').select('*').eq('user_id', currentUser.id).order('criado_em', { ascending: false }).limit(30);
     if (hist) {
       historico = hist.map(h => ({ tipo: h.tipo, frente: h.frente||h.programa_id, detalhe: h.detalhe, data: new Date(h.criado_em).toLocaleDateString('pt-BR') }));
-      localStorage.setItem('estuda_historico', JSON.stringify(historico));
+      localStorage.setItem('mestriai_historico', JSON.stringify(historico));
     }
     // Preferências
     const { data: pref } = await sb.from('preferencias').select('*').eq('user_id', currentUser.id).single();
     if (pref) {
       if (pref.theme) setTheme(pref.theme);
-      if (pref.anthropic_key) { apiKey = pref.anthropic_key; localStorage.setItem('estuda_api_key', apiKey); }
+      if (pref.anthropic_key) { apiKey = pref.anthropic_key; localStorage.setItem('mestriai_api_key', apiKey); }
       if (pref.programa_ativo_id) { programaAtivoId = pref.programa_ativo_id; modo = programaAtivoId; }
     }
     // Materiais salvos (inclui histórico de redações)
@@ -3951,7 +3947,7 @@ async function carregarDoSupabase() {
       const redHist = mSalvos.filter(m => m.tipo === 'redacao_hist');
       if (redHist.length) {
         redacoesHist = redHist.map(m => { try { return JSON.parse(m.conteudo_raw); } catch(_) { return null; } }).filter(Boolean);
-        localStorage.setItem('estuda_redacoes_hist', JSON.stringify(redacoesHist));
+        localStorage.setItem('mestriai_redacoes_hist', JSON.stringify(redacoesHist));
       }
       // Materiais normais (excluindo redações do histórico)
       materiaisSalvos = mSalvos.filter(m => m.tipo !== 'redacao_hist').map(m => ({
@@ -3961,7 +3957,7 @@ async function carregarDoSupabase() {
         matId: m.materia_id, matNome: m.mat_nome, unidade: m.unidade,
         conteudoRaw: m.conteudo_raw, data: m.criado_em
       }));
-      localStorage.setItem('estuda_materiais_salvos', JSON.stringify(materiaisSalvos));
+      localStorage.setItem('mestriai_materiais_salvos', JSON.stringify(materiaisSalvos));
     }
     renderToggleProgramas();
     sincronizarPaineisModo();
@@ -4006,7 +4002,7 @@ async function syncToSupabase() {
     // Preferências (upsert)
     await sb.from('preferencias').upsert({
       user_id: uid,
-      theme: localStorage.getItem('estuda_theme') || 'dark',
+      theme: localStorage.getItem('mestriai_theme') || 'dark',
       anthropic_key: apiKey,
       periodo_ativo_id: periodoAtivo || null,
       programa_ativo_id: programaAtivoId || null
@@ -4040,13 +4036,13 @@ async function syncMaterialSalvo(m) {
 // Sobrescrever funções existentes para incluir sync
 const _origSalvarMaterias = salvarMaterias;
 salvarMaterias = function() {
-  localStorage.setItem('estuda_materias', JSON.stringify(materias));
+  localStorage.setItem('mestriai_materias', JSON.stringify(materias));
   syncToSupabase();
 };
 
 const _origSalvarStats = salvarStats;
 salvarStats = function() {
-  localStorage.setItem('estuda_stats', JSON.stringify(stats));
+  localStorage.setItem('mestriai_stats', JSON.stringify(stats));
   renderStats();
   syncToSupabase();
 };
@@ -4056,7 +4052,7 @@ adicionarHistorico = function(tipo, frente, detalhe) {
   const item = { tipo, frente, detalhe, data: new Date().toLocaleDateString('pt-BR') };
   historico.unshift(item);
   if (historico.length > 30) historico.pop();
-  localStorage.setItem('estuda_historico', JSON.stringify(historico));
+  localStorage.setItem('mestriai_historico', JSON.stringify(historico));
   renderHistorico();
   syncHistoricoItem(item);
 };
@@ -4066,7 +4062,7 @@ salvarMaterialGerado = function() {
   if (!materialGeradoAtual) return;
   materiaisSalvos.unshift(materialGeradoAtual);
   if (materiaisSalvos.length > 50) materiaisSalvos.pop();
-  localStorage.setItem('estuda_materiais_salvos', JSON.stringify(materiaisSalvos));
+  localStorage.setItem('mestriai_materiais_salvos', JSON.stringify(materiaisSalvos));
   syncMaterialSalvo(materialGeradoAtual);
   toast('✓ Material salvo');
 };
@@ -4085,7 +4081,7 @@ salvarApiKey = function() {
   if (k) {
     if (!k.startsWith('sk-ant-')) { toast('Chave Anthropic inválida'); return; }
     apiKey = k;
-    localStorage.setItem('estuda_api_key', k);
+    localStorage.setItem('mestriai_api_key', k);
     document.getElementById('no-key-warning').style.display = 'none';
   }
   closeSetup();
@@ -4131,7 +4127,7 @@ document.addEventListener('keydown',e=>{
 // ============================================================
 // PLANO PREMIUM / PAYWALL
 // ============================================================
-let plano = JSON.parse(localStorage.getItem('estuda_plano') || '{"tipo":"free","geracoes":0,"mesReferencia":""}');
+let plano = JSON.parse(localStorage.getItem('mestriai_plano') || '{"tipo":"free","geracoes":0,"mesReferencia":""}');
 
 const LIMITE_FREE = 20;
 
@@ -4146,7 +4142,7 @@ function verificarResetMensal() {
   }
 }
 
-function salvarPlanoLocal() { localStorage.setItem('estuda_plano', JSON.stringify(plano)); }
+function salvarPlanoLocal() { localStorage.setItem('mestriai_plano', JSON.stringify(plano)); }
 
 function isPremium() { return plano.tipo === 'premium'; }
 
@@ -4193,7 +4189,7 @@ function ativarPremiumDemo() {
   salvarPlanoLocal();
   fecharPaywall();
   renderUsageBar();
-  toast('✦ Premium ativado! Obrigado por apoiar o Estuda.AI');
+  toast('✦ Premium ativado! Obrigado por apoiar o Mestriai');
 }
 
 // Interceptar todas as funções de geração para verificar limite
@@ -4215,9 +4211,9 @@ gerarDoMaterial = async function() { if (!contarGeracao()) return; return _gerar
 // ============================================================
 // PLANO DE ESTUDOS COM IA
 // ============================================================
-let planosSalvos = JSON.parse(localStorage.getItem('estuda_planos_estudo') || '[]');
+let planosSalvos = JSON.parse(localStorage.getItem('mestriai_planos_estudo') || '[]');
 
-function salvarPlanosEstudo() { localStorage.setItem('estuda_planos_estudo', JSON.stringify(planosSalvos)); }
+function salvarPlanosEstudo() { localStorage.setItem('mestriai_planos_estudo', JSON.stringify(planosSalvos)); }
 
 async function gerarPlanoPremium() {
   if (!isPremium()) { abrirPaywall('plano'); return; }
@@ -4356,9 +4352,9 @@ function excluirPlano(i) {
 // ============================================================
 // HISTÓRICO DE REDAÇÕES + GRÁFICO
 // ============================================================
-let redacoesHist = JSON.parse(localStorage.getItem('estuda_redacoes_hist') || '[]');
+let redacoesHist = JSON.parse(localStorage.getItem('mestriai_redacoes_hist') || '[]');
 
-function salvarRedacoesHist() { localStorage.setItem('estuda_redacoes_hist', JSON.stringify(redacoesHist)); }
+function salvarRedacoesHist() { localStorage.setItem('mestriai_redacoes_hist', JSON.stringify(redacoesHist)); }
 
 function switchRedTab(t) {
   ['nova','historico'].forEach(x => {
@@ -4491,7 +4487,7 @@ async function syncRedacoesHistItem(r) {
 // ============================================================
 // GRÁFICO DE PROGRESSO GERAL (XP ao longo do tempo)
 // ============================================================
-let progressoHist = JSON.parse(localStorage.getItem('estuda_progresso_hist') || '[]');
+let progressoHist = JSON.parse(localStorage.getItem('mestriai_progresso_hist') || '[]');
 
 function registrarProgressoHist() {
   const hoje = new Date().toDateString();
@@ -4507,7 +4503,7 @@ function registrarProgressoHist() {
     });
     if (progressoHist.length > 60) progressoHist.shift();
   }
-  localStorage.setItem('estuda_progresso_hist', JSON.stringify(progressoHist));
+  localStorage.setItem('mestriai_progresso_hist', JSON.stringify(progressoHist));
 }
 
 let chartXPInst = null;
@@ -4958,7 +4954,7 @@ function confirmarImportarPrograma() {
 
 function _executarImportPrograma(data) {
   if (!data || data.tipo !== 'programa' || !data.programa || !Array.isArray(data.materias)) {
-    toast('Formato inválido — não é um programa exportado pelo Estuda.AI'); return;
+    toast('Formato inválido — não é um programa exportado pelo Mestriai'); return;
   }
   if (!data.programa.nome) { toast('Programa sem nome'); return; }
   const novoProg = {
@@ -4997,8 +4993,8 @@ let onbProgIdCriado = null;
 let onbMatIdCriado  = null;
 
 function initOnboarding() {
-  if (localStorage.getItem('estuda_onboarding_done')) return;
-  if (localStorage.getItem('estuda_programas')) return; // usuário existente com dados próprios
+  if (localStorage.getItem('mestriai_onboarding_done')) return;
+  if (localStorage.getItem('mestriai_programas')) return; // usuário existente com dados próprios
   document.getElementById('onb-overlay').style.display = 'flex';
 }
 
@@ -5073,18 +5069,18 @@ function _onbMostrarPasso3() {
 }
 
 function onbSkip() {
-  localStorage.setItem('estuda_onboarding_done', '1');
+  localStorage.setItem('mestriai_onboarding_done', '1');
   document.getElementById('onb-overlay').style.display = 'none';
 }
 
 function onbFechar() {
-  localStorage.setItem('estuda_onboarding_done', '1');
+  localStorage.setItem('mestriai_onboarding_done', '1');
   document.getElementById('onb-overlay').style.display = 'none';
   renderDashboard();
 }
 
 function onbGerarHistorinha() {
-  localStorage.setItem('estuda_onboarding_done', '1');
+  localStorage.setItem('mestriai_onboarding_done', '1');
   document.getElementById('onb-overlay').style.display = 'none';
   goTo('historinha', null);
   if (onbMatIdCriado) {
@@ -5109,7 +5105,7 @@ function contarCardsDue() {
 function atualizarBotaoNotif() {
   const btn = document.getElementById('btn-notif');
   if (!btn) return;
-  const ativo = localStorage.getItem('estuda_notif_enabled') === '1'
+  const ativo = localStorage.getItem('mestriai_notif_enabled') === '1'
     && 'Notification' in window
     && Notification.permission === 'granted';
   btn.textContent = ativo ? '🔔 Notificações: ON' : '🔕 Notificações: OFF';
@@ -5120,26 +5116,26 @@ async function ativarNotificacoes() {
   if (!('Notification' in window)) { toast('Seu navegador não suporta notificações'); return; }
   const perm = await Notification.requestPermission();
   if (perm === 'granted') {
-    localStorage.setItem('estuda_notif_enabled', '1');
+    localStorage.setItem('mestriai_notif_enabled', '1');
     toast('Notificações ativadas!');
     atualizarBotaoNotif();
     verificarNotificacoes(true);
   } else {
-    localStorage.removeItem('estuda_notif_enabled');
+    localStorage.removeItem('mestriai_notif_enabled');
     toast('Permissão negada — ative nas configurações do navegador');
     atualizarBotaoNotif();
   }
 }
 
 function desativarNotificacoes() {
-  localStorage.removeItem('estuda_notif_enabled');
-  localStorage.removeItem('estuda_notif_last_date');
+  localStorage.removeItem('mestriai_notif_enabled');
+  localStorage.removeItem('mestriai_notif_last_date');
   toast('Notificações desativadas');
   atualizarBotaoNotif();
 }
 
 async function toggleNotificacoes() {
-  if (localStorage.getItem('estuda_notif_enabled') === '1') {
+  if (localStorage.getItem('mestriai_notif_enabled') === '1') {
     desativarNotificacoes();
   } else {
     await ativarNotificacoes();
@@ -5147,7 +5143,7 @@ async function toggleNotificacoes() {
 }
 
 function mostrarNotificacaoRevisao(count) {
-  const title = 'Estuda.AI — Hora de revisar!';
+  const title = 'Mestriai — Hora de revisar!';
   const body  = `Você tem ${count} flashcard${count !== 1 ? 's' : ''} para revisar hoje.`;
   const icon  = './icons/icon-192.svg';
   const tag   = 'revisao-sm2';
@@ -5162,13 +5158,13 @@ function mostrarNotificacaoRevisao(count) {
 function verificarNotificacoes(forcar) {
   if (!('Notification' in window)) return;
   if (Notification.permission !== 'granted') return;
-  if (localStorage.getItem('estuda_notif_enabled') !== '1') return;
+  if (localStorage.getItem('mestriai_notif_enabled') !== '1') return;
   const hoje = new Date().toDateString();
-  if (!forcar && localStorage.getItem('estuda_notif_last_date') === hoje) return;
+  if (!forcar && localStorage.getItem('mestriai_notif_last_date') === hoje) return;
   const due = contarCardsDue();
   if (due > 0) {
     mostrarNotificacaoRevisao(due);
-    localStorage.setItem('estuda_notif_last_date', hoje);
+    localStorage.setItem('mestriai_notif_last_date', hoje);
   }
 }
 
@@ -5304,13 +5300,13 @@ function exportarParaPDF(titulo, htmlContent) {
   area.innerHTML = `<div style="font-family:Georgia,serif;max-width:800px;margin:0 auto;color:#000">
     <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #c8a96e;padding-bottom:12px;margin-bottom:28px">
       <div>
-        <div style="font-size:10px;letter-spacing:2px;color:#c8a96e;text-transform:uppercase;margin-bottom:4px">Estuda.AI</div>
+        <div style="font-size:10px;letter-spacing:2px;color:#c8a96e;text-transform:uppercase;margin-bottom:4px">Mestriai</div>
         <div style="font-size:20px;font-weight:700">${titulo}</div>
       </div>
       <div style="font-size:11px;color:#888">${data}</div>
     </div>
     ${htmlContent}
-    <div style="margin-top:48px;padding-top:12px;border-top:1px solid #e0e0e0;font-size:11px;color:#aaa;text-align:center">Gerado por Estuda.AI</div>
+    <div style="margin-top:48px;padding-top:12px;border-top:1px solid #e0e0e0;font-size:11px;color:#aaa;text-align:center">Gerado por Mestriai</div>
   </div>`;
   window.print();
 }

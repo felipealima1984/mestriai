@@ -1,4 +1,4 @@
-# Estuda.AI — Roadmap de Melhorias e Correções
+# Mestriai — Roadmap de Melhorias e Correções
 **Levantamento realizado em:** 22/05/2026  
 **Disponibilidade:** 15h/dia (tempo entre sessões)  
 **Total estimado:** ~96h ≈ 6,5 dias de trabalho  
@@ -44,9 +44,9 @@
 | # | Atividade | Horas | Status | Notas |
 |---|-----------|------:|--------|-------|
 | 10 | ~~PWA: `manifest.json` + Service Worker offline~~ | ~~6h~~ | **feito** | `manifest.json` + `sw.js` cache-first; ícones SVG 192/512 maskable; meta tags iOS; banner de nova versão |
-| 10b | ~~Logo com imagem (adaptação por tema)~~ | ~~2h~~ | **feito** | `<img>` nos lugares de "Estuda.AI" na sidebar e login; `atualizarLogoTema()` troca src dark↔light automaticamente |
+| 10b | ~~Logo com imagem (adaptação por tema)~~ | ~~2h~~ | **feito** | `<img>` nos lugares de "Mestriai" na sidebar e login; `atualizarLogoTema()` troca src dark↔light automaticamente |
 | 11 | ~~Push notifications para revisão SM-2~~ | ~~8h~~ | **feito** | Botão na sidebar; `contarCardsDue()` + `verificarNotificacoes()`; SW SHOW_NOTIFICATION + notificationclick; verificação horária |
-| 12 | ~~Onboarding wizard para novos usuários~~ | ~~6h~~ | **feito** | Wizard 3 passos: tipo+programa → matéria+tópicos → confirmação+CTA historinha; `estuda_onboarding_done` evita re-exibição |
+| 12 | ~~Onboarding wizard para novos usuários~~ | ~~6h~~ | **feito** | Wizard 3 passos: tipo+programa → matéria+tópicos → confirmação+CTA historinha; `mestriai_onboarding_done` evita re-exibição |
 | 13 | ~~Histórico de notas das redações com gráfico~~ | ~~4h~~ | **feito** | Aba Histórico no painel de redação; gráfico de linha (Chart.js) de evolução; lista com nota/tema/data; botão de excluir; sync Supabase via `materiais_salvos` (tipo `redacao_hist`); testes seção 27 |
 | 14 | ~~Exportação de historinhas e flashcards para PDF~~ | ~~6h~~ | **feito** | `window.print()` + CSS `@media print`; `#print-area` + `_buildExportContent`; botão 📄 PDF em result boxes e em cada item salvo; layout: cabeçalho, 2 colunas para flashcards, questões numeradas com gabarito; testes seção 28 |
 | 15 | ~~Estatísticas por matéria e por período~~ | ~~4h~~ | **feito** | `renderEstatisticasMateria` (rows + barras + taxa colorida), `renderEstatisticasPeriodo` (agregação por período, condicional), `renderGraficoEstatMat` (bar chart acertos vs erros, top 8 matérias), integrado em `renderProgresso`; testes seção 29 |
