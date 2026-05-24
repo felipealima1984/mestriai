@@ -1,7 +1,7 @@
-// Estuda.AI — Service Worker
+// Mestriai — Service Worker
 // Estratégia: cache-first para assets estáticos, network-only para APIs
 
-const CACHE_NAME = 'estudaai-v1.10.0';
+const CACHE_NAME = 'mestriai-v1.10.0';
 
 // Recursos pré-cacheados na instalação (app shell)
 const PRECACHE_URLS = [

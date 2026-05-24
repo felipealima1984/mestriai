@@ -1,4 +1,4 @@
-# Estuda.AI — Plataforma de Estudos com IA
+# Mestriai — Plataforma de Estudos com IA
 
 ## Sobre o projeto
 Plataforma web de estudos com IA para qualquer tipo de concurso/materia.

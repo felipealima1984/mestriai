@@ -1,9 +1,9 @@
-# Estuda.AI — Guia de Configuração Supabase
+# Mestriai — Guia de Configuração Supabase
 
 ## 1. Criar o projeto
 
 1. Acesse [supabase.com](https://supabase.com) → **New project**
-2. Escolha um nome (ex: `estuda-ai`) e uma senha forte para o banco
+2. Escolha um nome (ex: `mestriai`) e uma senha forte para o banco
 3. Selecione a região mais próxima: **South America (São Paulo)**
 4. Aguarde o projeto inicializar (~2 min)
 
@@ -49,7 +49,7 @@ Anon Key:      eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## 5. Configurar no app
 
-Ao abrir o Estuda.AI, clique em **⚙ Configurar API** e preencha:
+Ao abrir o Mestriai, clique em **⚙ Configurar API** e preencha:
 
 - **Supabase URL** → o Project URL copiado acima
 - **Supabase Anon Key** → a Anon Key copiada acima
