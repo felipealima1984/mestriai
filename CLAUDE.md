@@ -46,11 +46,6 @@ O projeto inteiro esta em um unico arquivo. A organizacao interna e por secoes:
 - contarGeracao() — controla limite de geracoes do plano free
 - FALTA: integracao Stripe real para cobranca
 
-## Bugs conhecidos (maio 2026)
-1. ReferenceError: progId is not defined — ocorre ao duplicar abas na tela Materias
-   Causa: switchMatTab() referencia progId como variavel livre em template string ou onclick
-2. Dois rows de botoes de programa no painel Materias precisam unificar em um
-
 ## Variaveis globais importantes
 - programas[] — lista de programas de estudo
 - materias[] — lista de materias
@@ -59,7 +54,7 @@ O projeto inteiro esta em um unico arquivo. A organizacao interna e por secoes:
 - progAtivo — ID do programa ativo
 
 ## Limites do plano free (atual)
-- 10 geracoes de conteudo por mes
+- 20 geracoes de conteudo por mes
 - 1 programa de estudos
 - Sem plano de estudos gerado por IA
 

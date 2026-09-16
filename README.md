@@ -82,7 +82,7 @@ Gerenciamento completo de matérias com três unidades de avaliação:
 Para programas de graduação: períodos (1º ao 10º) com filtro automático de matérias. Um período marcado como ativo filtra o conteúdo em Historinhas, Simulados e Material de Estudo.
 
 ### Freemium
-- **Free:** 10 gerações/mês, 1 programa de estudos, sem plano gerado por IA
+- **Free:** 20 gerações/mês, 1 programa de estudos, sem plano gerado por IA
 - **Premium:** gerações ilimitadas, múltiplos programas, plano de estudos por IA
 
 ### Autenticação e Sincronização (Supabase)
@@ -368,7 +368,7 @@ Para limpar tudo localmente: `localStorage.clear()` no console do navegador.
 - Gamificação: XP, níveis, streaks, baralhos
 - Quiz interativo por matéria
 - Dashboard com gráficos de progresso (Chart.js)
-- Modelo freemium: plano free (10 gerações/mês, 1 programa) e premium
+- Modelo freemium: plano free (20 gerações/mês, 1 programa) e premium
 - Plano de estudos gerado por IA (premium)
 
 ### v1.3 — Períodos de graduação

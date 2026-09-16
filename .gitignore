@@ -1,0 +1,3 @@
+# Configuração local do Claude Code (específica da máquina — permissões
+# de comando aprovadas neste ambiente) — não é pra compartilhar/versionar.
+.claude/settings.local.json
